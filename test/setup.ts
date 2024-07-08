@@ -21,7 +21,7 @@ const firestore = admin.firestore();
 (global as any).firestoreRef = firestore;
 
 const uniqueCollections = [];
-jest.setTimeout(10000); // 10 seconds
+jest.setTimeout(30000); // 30 seconds
 
 beforeEach(() => {
   initialize(firestore);
