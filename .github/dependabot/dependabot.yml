@@ -1,0 +1,11 @@
+version: 2
+updates:
+  - package-ecosystem: "yarn" # or "yarn", "pip", "bundler", etc.
+    directory: "/" # Location of package manifests
+    schedule:
+      interval: "daily" # Can be "daily", "weekly", "monthly"
+    commit-message:
+      prefix: "chore" # Customize the commit message prefix
+    open-pull-requests-limit: 50 # Limit the number of open PRs
+    rebase-strategy: "auto" # Can be "auto", "rebased", "disabled"
+    
