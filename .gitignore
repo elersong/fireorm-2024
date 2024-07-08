@@ -63,3 +63,4 @@ typings/
 firestore.creds.json
 lib
 docs
+service-account.json
