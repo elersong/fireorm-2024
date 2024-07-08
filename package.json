@@ -54,7 +54,7 @@
     "@types/pluralize": "^0.0.29",
     "@typescript-eslint/eslint-plugin": "^4.25.0",
     "@typescript-eslint/parser": "^4.25.0",
-    "class-validator": "^0.13.1",
+    "class-validator": "^0.14.1",
     "docsify-cli": "^4.4.3",
     "eslint": "^7.27.0",
     "eslint-config-prettier": "^8.3.0",
