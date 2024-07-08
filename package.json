@@ -49,7 +49,7 @@
     "@commitlint/cli": "^12.1.4",
     "@commitlint/config-conventional": "^12.1.4",
     "@commitlint/travis-cli": "^12.1.4",
-    "@google-cloud/firestore": "^4.12.2",
+    "@google-cloud/firestore": "^7.9.0",
     "@types/jest": "^26.0.23",
     "@types/pluralize": "^0.0.29",
     "@typescript-eslint/eslint-plugin": "^4.25.0",
