@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "class-transformer": "0.4.0",
+    "dotenv": "^16.4.5",
     "pluralize": "^8.0.0",
     "ts-object-path": "^0.1.2"
   },
@@ -55,7 +56,6 @@
     "@typescript-eslint/parser": "^4.25.0",
     "class-validator": "^0.13.1",
     "docsify-cli": "^4.4.3",
-    "dotenv": "^10.0.0",
     "eslint": "^7.27.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
