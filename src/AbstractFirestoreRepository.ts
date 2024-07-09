@@ -423,7 +423,7 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
       const entity = item instanceof Entity ? item : Object.assign(new Entity(), item);
 
       return classValidator.validate(entity, this.config.validatorOptions);
-    } catch (error) {
+    } catch (error: any) { //TODO: type error
       if (error.code === 'MODULE_NOT_FOUND') {
         throw new Error(
           'It looks like class-validator is not installed. Please run `npm i -S class-validator` to fix this error, or initialize FireORM with `validateModels: false` to disable validation.'
