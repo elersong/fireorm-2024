@@ -1,6 +1,6 @@
 import { ignoreKey, serializeKey } from './Decorators';
 import { SubCollectionMetadata } from './MetadataStorage';
-import { IEntity } from '.';
+import { IEntity, FirestoreSerializable } from '.';
 
 /**
  * Extract getters and object in form of data properties
@@ -33,14 +33,6 @@ export function extractAllGetters(obj: Record<string, unknown>) {
     return accumulator;
   }, {});
 }
-
-/**
- * FirestoreSerializable type. A more specific type than Record<string, unknown>
- * 
- * @typedef {Object} FirestoreSerializable
- * @property {FirebaseFirestore.FieldValue | Partial<unknown> | undefined} [key: string] Firestore FieldValue or Partial<unknown>
- */
-type FirestoreSerializable = { [key: string]: FirebaseFirestore.FieldValue | Partial<unknown> | undefined };
 
 /**
  * Returns a serializable object from entity<T>

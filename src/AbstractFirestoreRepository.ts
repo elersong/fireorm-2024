@@ -20,6 +20,7 @@ import {
   IEntityConstructor,
   ITransactionReferenceStorage,
   ICustomQuery,
+  FirestoreSerializable,
 } from './types';
 
 import { isDocumentReference, isGeoPoint, isObject, isTimestamp } from './TypeGuards';
@@ -62,7 +63,7 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
     this.firestoreColRef = firestoreRef.collection(this.path);
   }
 
-  protected toSerializableObject = (obj: T): Record<string, unknown> =>
+  protected toSerializableObject = (obj: T): FirestoreSerializable =>
     serializeEntity(obj, this.colMetadata.subCollections);
 
   protected transformFirestoreTypes = (obj: Record<string, unknown>) => {
