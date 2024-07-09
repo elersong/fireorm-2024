@@ -83,7 +83,8 @@
     "debug": "^4.3.2",
     "prismjs": "^1.27.0",
     "marked": "^4.0.10",
-    "semver": "^7.5.2"
+    "semver": "^7.5.2",
+    "ansi-regex": "^5.0.1"
   },
   "peerDependencies": {
     "reflect-metadata": "^0.1.13"
