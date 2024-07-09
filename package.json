@@ -81,7 +81,8 @@
     "ws": "^7.5.10",
     "braces": "^3.0.3",
     "debug": "^4.3.2",
-    "prismjs": "^1.27.0"
+    "prismjs": "^1.27.0",
+    "marked": "^4.0.10"
   },
   "peerDependencies": {
     "reflect-metadata": "^0.1.13"
