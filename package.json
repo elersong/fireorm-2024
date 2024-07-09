@@ -89,7 +89,11 @@
     "minimatch": "^3.0.5",
     "node-fetch": "^2.6.7",
     "i": "^0.3.7",
-    "trim-newlines": "^3.0.1"
+    "trim-newlines": "^3.0.1",
+    "docsify": "^4.12.2",
+    "word-wrap": "^1.2.4",
+    "got": "^11.8.5",
+    "trim-off-newlines": "^1.0.3"
   },
   "peerDependencies": {
     "reflect-metadata": "^0.1.13"
