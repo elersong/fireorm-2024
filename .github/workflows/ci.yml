@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
@@ -31,8 +33,13 @@ jobs:
       - name: Run ESLint
         run: yarn eslint '*/**/*.{js,ts}' --quiet
 
-      - name: Lint commit messages
-        run: yarn commitlint --from=HEAD~1 --to=HEAD
+      - name: Run commitlint
+        run: |
+          if git rev-parse HEAD~1 >/dev/null 2>&1; then
+            yarn commitlint --from=HEAD~1 --to=HEAD;
+          else
+            echo "No previous commit found, skipping commitlint";
+          fi
 
       - name: Run unit tests
         run: yarn test
