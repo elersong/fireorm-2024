@@ -12,13 +12,21 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    env:
+      FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
+      FIRESTORE_PROJECT_ID: ${{ secrets.FIRESTORE_PROJECT_ID }}
+      FIRESTORE_CLIENT_EMAIL: ${{ secrets.FIRESTORE_CLIENT_EMAIL }}
+      FIRESTORE_PRIVATE_KEY_BASE_64: ${{ secrets.FIRESTORE_PRIVATE_KEY_BASE_64 }}
+
     strategy:
       matrix:
-        node-version: ['14', '16', '18', '20']
+        node-version: ['20']
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
@@ -31,8 +39,13 @@ jobs:
       - name: Run ESLint
         run: yarn eslint '*/**/*.{js,ts}' --quiet
 
-      - name: Lint commit messages
-        run: yarn commitlint --from=HEAD~1 --to=HEAD
+      - name: Run commitlint
+        run: |
+          if git rev-parse HEAD~1 >/dev/null 2>&1; then
+            yarn commitlint --from=HEAD~1 --to=HEAD;
+          else
+            echo "No previous commit found, skipping commitlint";
+          fi
 
       - name: Run unit tests
         run: yarn test

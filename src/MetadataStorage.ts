@@ -50,7 +50,7 @@ export class MetadataStorage {
   public config: MetadataStorageConfig = {
     validateModels: false,
     validatorOptions: {},
-    throwOnDuplicatedCollection: true
+    throwOnDuplicatedCollection: true,
   };
 
   public getCollection = (pathOrConstructor: string | IEntityConstructor) => {
