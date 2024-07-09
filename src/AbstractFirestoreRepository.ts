@@ -20,6 +20,7 @@ import {
   IEntityConstructor,
   ITransactionReferenceStorage,
   ICustomQuery,
+  FirestoreSerializable,
 } from './types';
 
 import { isDocumentReference, isGeoPoint, isObject, isTimestamp } from './TypeGuards';
@@ -62,7 +63,7 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
     this.firestoreColRef = firestoreRef.collection(this.path);
   }
 
-  protected toSerializableObject = (obj: T): Record<string, unknown> =>
+  protected toSerializableObject = (obj: T): FirestoreSerializable =>
     serializeEntity(obj, this.colMetadata.subCollections);
 
   protected transformFirestoreTypes = (obj: Record<string, unknown>) => {
@@ -423,14 +424,14 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
       const entity = item instanceof Entity ? item : Object.assign(new Entity(), item);
 
       return classValidator.validate(entity, this.config.validatorOptions);
-    } catch (error) {
-      if (error.code === 'MODULE_NOT_FOUND') {
+    } catch (error: unknown) {
+      if (error instanceof Error && (error as { code?: string }).code === 'MODULE_NOT_FOUND') {
         throw new Error(
           'It looks like class-validator is not installed. Please run `npm i -S class-validator` to fix this error, or initialize FireORM with `validateModels: false` to disable validation.'
         );
+      } else {
+        throw error;
       }
-
-      throw error;
     }
   }
 

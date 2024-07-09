@@ -199,3 +199,13 @@ export interface ValidatorOptions {
    */
   forbidUnknownValues?: boolean;
 }
+
+/**
+ * FirestoreSerializable type. A more specific type than Record<string, unknown>
+ *
+ * @typedef {Object} FirestoreSerializable
+ * @property {FirebaseFirestore.FieldValue | Partial<unknown> | undefined} [key: string] Firestore FieldValue or Partial<unknown>
+ */
+export type FirestoreSerializable = {
+  [key: string]: FirebaseFirestore.FieldValue | Partial<unknown> | undefined;
+};

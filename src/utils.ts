@@ -1,6 +1,6 @@
 import { ignoreKey, serializeKey } from './Decorators';
 import { SubCollectionMetadata } from './MetadataStorage';
-import { IEntity } from '.';
+import { IEntity, FirestoreSerializable } from '.';
 
 /**
  * Extract getters and object in form of data properties
@@ -37,39 +37,52 @@ export function extractAllGetters(obj: Record<string, unknown>) {
 /**
  * Returns a serializable object from entity<T>
  *
- * @template T
- * @param {T} Entity object
- * @param {SubCollectionMetadata[]} subColMetadata Subcollection
- * metadata to remove runtime-created fields
- * @returns {Object} Serialiable object
+ * @template T - The entity type
+ * @param {Partial<T>} obj - The entity object
+ * @param {SubCollectionMetadata[]} subColMetadata - Subcollection metadata to remove runtime-created fields
+ * @returns {FirestoreSerializable} - A serializable object
  */
 export function serializeEntity<T extends IEntity>(
   obj: Partial<T>,
   subColMetadata: SubCollectionMetadata[]
-): Record<string, unknown> {
+): FirestoreSerializable {
   const objectGetters = extractAllGetters(obj as Record<string, unknown>);
+  const serializableObj: FirestoreSerializable = {};
 
-  const serializableObj = { ...obj, ...objectGetters };
+  // Merge original properties and getters
+  const combinedObj = { ...obj, ...objectGetters };
 
+  // Remove sub-collection metadata properties
   subColMetadata.forEach(scm => {
-    delete serializableObj[scm.propertyKey];
+    delete combinedObj[scm.propertyKey];
   });
 
-  Object.entries(serializableObj).forEach(([propertyKey, propertyValue]) => {
+  // Process each property and ensure it fits the expected return type
+  Object.entries(combinedObj).forEach(([propertyKey, propertyValue]) => {
     if (Reflect.getMetadata(ignoreKey, obj, propertyKey) === true) {
-      delete serializableObj[propertyKey];
+      return; // Skip properties marked with ignoreKey
     }
     if (Reflect.getMetadata(serializeKey, obj, propertyKey) !== undefined) {
       if (Array.isArray(propertyValue)) {
-        (serializableObj as { [key: string]: unknown })[propertyKey] = propertyValue.map(element =>
+        serializableObj[propertyKey] = propertyValue.map(element =>
           serializeEntity(element, [])
-        );
-      } else {
-        (serializableObj as { [key: string]: unknown })[propertyKey] = serializeEntity(
+        ) as unknown as FirebaseFirestore.FieldValue | Partial<unknown>;
+      } else if (typeof propertyValue === 'object' && propertyValue !== null) {
+        serializableObj[propertyKey] = serializeEntity(
           propertyValue as Partial<T>,
           []
-        );
+        ) as unknown as FirebaseFirestore.FieldValue | Partial<unknown>;
+      } else {
+        serializableObj[propertyKey] = propertyValue as
+          | FirebaseFirestore.FieldValue
+          | Partial<unknown>
+          | undefined;
       }
+    } else {
+      serializableObj[propertyKey] = propertyValue as
+        | FirebaseFirestore.FieldValue
+        | Partial<unknown>
+        | undefined;
     }
   });
 
