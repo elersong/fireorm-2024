@@ -48,7 +48,6 @@
   "devDependencies": {
     "@commitlint/cli": "^12.1.4",
     "@commitlint/config-conventional": "^12.1.4",
-    "@commitlint/travis-cli": "^12.1.4",
     "@google-cloud/firestore": "^7.9.0",
     "@types/jest": "^26.0.23",
     "@types/node": "20.10.3",
