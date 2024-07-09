@@ -73,16 +73,21 @@ export function serializeEntity<T extends IEntity>(
           []
         ) as unknown as FirebaseFirestore.FieldValue | Partial<unknown>;
       } else {
-        serializableObj[propertyKey] = propertyValue as FirebaseFirestore.FieldValue | Partial<unknown> | undefined;
+        serializableObj[propertyKey] = propertyValue as
+          | FirebaseFirestore.FieldValue
+          | Partial<unknown>
+          | undefined;
       }
     } else {
-      serializableObj[propertyKey] = propertyValue as FirebaseFirestore.FieldValue | Partial<unknown> | undefined;
+      serializableObj[propertyKey] = propertyValue as
+        | FirebaseFirestore.FieldValue
+        | Partial<unknown>
+        | undefined;
     }
   });
 
   return serializableObj;
 }
-
 
 /**
  * Returns true if arrays are equal
