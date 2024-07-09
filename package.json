@@ -78,7 +78,8 @@
     "minimist": "^1.2.6",
     "shell-quote": "^1.7.3",
     "ws": "^7.5.10",
-    "braces": "^3.0.3"
+    "braces": "^3.0.3",
+    "debug": "^4.3.2"
   },
   "peerDependencies": {
     "reflect-metadata": "^0.1.13"
