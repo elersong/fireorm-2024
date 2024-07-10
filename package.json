@@ -23,7 +23,7 @@
     "build": "tsc && yarn build:strict",
     "build:typedoc": "typedoc --options docgen/typedoc.json",
     "build:docsify": "yarn ts-node docgen/build.ts",
-    "build:doc": "yarn rimraf docs && yarn build:typedoc && yarn build:docsify && cp CNAME docs/CNAME",
+    "build:doc": "yarn rimraf docs && yarn build:typedoc && yarn build:docsify",
     "build:strict": "tsc -p src",
     "serve:doc": "yarn docsify serve docgen",
     "deploy:doc": "gh-pages-deploy",
@@ -71,10 +71,10 @@
     "rimraf": "^3.0.0",
     "semantic-release": "^24.0.0",
     "ts-jest": "^29.2.0",
-    "ts-node": "^10.0.0",
+    "ts-node": "^10.9.2",
     "typedoc": "^0.26.3",
-    "typedoc-plugin-markdown": "^3.8.2",
-    "typescript": "^4.9.0"
+    "typedoc-plugin-markdown": "^4.1.2",
+    "typescript": "^5.5.3"
   },
   "resolutions": {
     "minimist": "^1.2.6",
