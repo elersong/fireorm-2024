@@ -1,18 +1,21 @@
 {
-  "name": "fireorm",
-  "description": "ORM for Firestore",
+  "name": "fireorm-2024",
+  "description": "Extended version of fireorm, the ORM for Firestore",
   "version": "0.0.0-development",
   "author": "Willy Ovalle <willyovalle16@gmail.com>",
+  "contributors": [
+    "Grey Elerson <grey.l.elerson@gmail.com>"
+  ],
   "homepage": "https://fireorm.js.org",
   "license": "ISC",
   "main": "lib/src/index.js",
   "types": "lib/src/index.d.ts",
   "bugs": {
-    "url": "https://github.com/wovalle/fireorm/issues"
+    "url": "https://github.com/elersong/fireorm-2024/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wovalle/fireorm.git"
+    "url": "git+https://github.com/elersong/fireorm-2024.git"
   },
   "keywords": [
     "firebase",
