@@ -48,12 +48,12 @@ function _getRepository<T extends IEntity = IEntity>(
     }
   }
 
-  if (repositoryType === 'custom' || (repositoryType === 'default' && repository)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new (repository?.target as any)(entityConstructorOrPath);
-  } else {
-    return new BaseFirestoreRepository<T>(entityConstructorOrPath);
-  }
+  const RepositoryClass =
+    repositoryType === 'custom' || (repositoryType === 'default' && repository)
+      ? (repository?.target as any)
+      : BaseFirestoreRepository;
+
+  return new RepositoryClass(entityConstructorOrPath);
 }
 
 export function getRepository<T extends IEntity>(
