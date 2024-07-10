@@ -105,6 +105,12 @@ export const runTransaction = async <T>(executor: (tran: FirestoreTransaction) =
   });
 };
 
+/**
+ * Create a new Firestore batch.
+ *
+ * @returns {FirestoreBatch} A new Firestore batch.
+ * @throws Error if Firestore is not initialized.
+ */
 export const createBatch = () => {
   const metadataStorage = getMetadataStorage();
 
