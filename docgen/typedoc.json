@@ -1,15 +1,10 @@
 {
   "out": "docs",
   "name": "fireorm🔥",
-  "readme": "README",
-  "mode": "file",
-  "gaId": "UA-133856278-1",
-  "gaSite": "Fireorm Type Documentation",
+  "readme": "../README.md",
+  "entryPoints": ["../src"],
   "excludeExternals": true,
-  "excludeNotExported": true,
-  "hideBreadcrumbs": true,
-  "plugins": ["typedoc-plugin-markdown"],
-  "theme": "docgen/typedoc-docsify",
-  "hideProjectTitle": true,
+  "plugin": ["typedoc-plugin-markdown"],
+  "theme": "default",
   "exclude": ["*.spec.*"]
 }
