@@ -75,7 +75,7 @@ const ensureDirectoryExists = async (dirPath: string) => {
       const typesSidebarPath = path.join(outDir, '_sidebar.md');
       const generalSidebarPath = path.join(docsDir, 'sidebar.md');
 
-      if (await fileExists(typesSidebarPath) && await fileExists(generalSidebarPath)) {
+      if ((await fileExists(typesSidebarPath)) && (await fileExists(generalSidebarPath))) {
         const typesSidebar = (await fs.promises.readFile(typesSidebarPath)).toString();
         const generalSidebar = (await fs.promises.readFile(generalSidebarPath)).toString();
 
@@ -83,8 +83,10 @@ const ensureDirectoryExists = async (dirPath: string) => {
         await fs.promises.writeFile(path.join(outDir, 'sidebar.md'), fullSidebar);
         console.log('Merged sidebars successfully');
       } else {
-        if (!await fileExists(typesSidebarPath)) console.warn(`Types sidebar not found: ${typesSidebarPath}`);
-        if (!await fileExists(generalSidebarPath)) console.warn(`General sidebar not found: ${generalSidebarPath}`);
+        if (!(await fileExists(typesSidebarPath)))
+          console.warn(`Types sidebar not found: ${typesSidebarPath}`);
+        if (!(await fileExists(generalSidebarPath)))
+          console.warn(`General sidebar not found: ${generalSidebarPath}`);
       }
     } catch (err) {
       console.error('Error merging sidebar files:', err);
