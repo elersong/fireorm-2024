@@ -176,7 +176,7 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
 
   /**
    * Returns a new QueryBuilder with a filter specifying that the
-   * value in @param prop must be equal to @param val.
+   * value in @param prop must be equal to @param val
    *
    * @param {IWherePropParam<T>} prop field to be filtered on, where
    * prop could be keyof T or a lambda where T is the first parameter
@@ -191,7 +191,7 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
 
   /**
    * Returns a new QueryBuilder with a filter specifying that the
-   * value in @param prop must not be equal to @param val.
+   * value in @param prop must not be equal to @param val
    *
    * @param {IWherePropParam<T>} prop field to be filtered on, where
    * prop could be keyof T or a lambda where T is the first parameter
@@ -206,7 +206,7 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
 
   /**
    * Returns a new QueryBuilder with a filter specifying that the
-   * value in @param prop must be greater than @param val.
+   * value in @param prop must be greater than @param val
    *
    * @param {IWherePropParam<T>} prop field to be filtered on, where
    * prop could be keyof T or a lambda where T is the first parameter
@@ -221,7 +221,7 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
 
   /**
    * Returns a new QueryBuilder with a filter specifying that the
-   * value in @param prop must be greater or equal than @param val.
+   * value in @param prop must be greater or equal than @param val
    *
    * @param {IWherePropParam<T>} prop field to be filtered on, where
    * prop could be keyof T or a lambda where T is the first parameter
@@ -236,7 +236,7 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
 
   /**
    * Returns a new QueryBuilder with a filter specifying that the
-   * value in @param prop must be less than @param val.
+   * value in @param prop must be less than @param val
    *
    * @param {IWherePropParam<T>} prop field to be filtered on, where
    * prop could be keyof T or a lambda where T is the first parameter
@@ -251,7 +251,7 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
 
   /**
    * Returns a new QueryBuilder with a filter specifying that the
-   * value in @param prop must be less or equal than @param val.
+   * value in @param prop must be less or equal than @param val
    *
    * @param {IWherePropParam<T>} prop field to be filtered on, where
    * prop could be keyof T or a lambda where T is the first parameter
@@ -266,7 +266,7 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
 
   /**
    * Returns a new QueryBuilder with a filter specifying that the
-   * value in @param val must be contained in @param prop.
+   * value in @param val must be contained in @param prop
    *
    * @param {IWherePropParam<T>} prop field to be filtered on, where
    * prop could be keyof T or a lambda where T is the first parameter
@@ -300,7 +300,7 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
    *
    * @param {IWherePropParam<T>} prop field to be filtered on, where
    * prop could be keyof T or a lambda where T is the first parameter
-   * @param {IFirestoreVal[]} val[] array of values to compare in the filter (max 10 items in array)
+   * @param {IFirestoreVal[]} val array of values to compare in the filter (max 10 items in array)
    * @returns {QueryBuilder<T>} A new QueryBuilder with the specified
    * query applied.
    * @memberof AbstractFirestoreRepository
@@ -315,7 +315,7 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
    *
    * @param {IWherePropParam<T>} prop field to be filtered on, where
    * prop could be keyof T or a lambda where T is the first parameter
-   * @param {IFirestoreVal[]} val[] array of values to compare in the filter (max 10 items in array)
+   * @param {IFirestoreVal[]} val array of values to compare in the filter (max 10 items in array)
    * @returns {QueryBuilder<T>} A new QueryBuilder with the specified
    * query applied.
    * @memberof AbstractFirestoreRepository
@@ -344,7 +344,7 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
 
   /**
    * Returns a new QueryBuilder with an additional ascending order
-   * specified by @param prop. Can only be used once per query.
+   * specified by @param prop Can only be used once per query.
    *
    * @param {IWherePropParam<T>} prop field to be ordered on, where
    * prop could be keyof T or a lambda where T is the first parameter
@@ -358,7 +358,7 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
 
   /**
    * Returns a new QueryBuilder with an additional descending order
-   * specified by @param prop. Can only be used once per query.
+   * specified by @param prop Can only be used once per query.
    *
    * @param {IWherePropParam<T>} prop field to be ordered on, where
    * prop could be keyof T or a lambda where T is the first parameter
@@ -396,7 +396,7 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
 
   /**
    * Returns a new QueryBuilder with an custom query
-   * specified by @param func. Can only be used once per query.
+   * specified by @param func Can only be used once per query.
    *
    * @param {ICustomQuery<T>} func function to run in a new query
    * @returns {QueryBuilder<T>} A new QueryBuilder with the specified
