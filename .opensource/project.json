@@ -1,9 +1,9 @@
 {
-  "name": "Fireorm: ORM for firestore",
+  "name": "ORM for Firebase Firestore, updated for 2024",
   "type": "library",
   "platforms": ["Web", "Node"],
   "content": "README.md",
-  "related": ["wovalle/fireorm"],
+  "related": ["elersong/fireorm-2024"],
   "tabs": [
     {
       "title": "Documentation",
@@ -11,11 +11,11 @@
     },
     {
       "title": "Github",
-      "href": "https://github.com/wovalle/fireorm"
+      "href": "https://github.com/elersong/fireorm-2024"
     },
     {
       "title": "NPM",
-      "href": "https://www.npmjs.com/package/fireorm"
+      "href": "https://www.npmjs.com/package/fireorm-2024"
     }
   ]
 }
