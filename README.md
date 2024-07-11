@@ -1,10 +1,10 @@
-# fireorm🔥
+# 🔥 FireORM-2024 🔥
 
-[![NPM Version](https://img.shields.io/npm/v/fireorm.svg?style=flat)](https://www.npmjs.com/package/fireorm)
-[![Build Status](https://travis-ci.com/wovalle/fireorm.svg?token=KsyisFHzgCusk2sapuJe&branch=master)](https://travis-ci.com/wovalle/fireorm)
-[![Typescript lang](https://img.shields.io/badge/Language-Typescript-Blue.svg)](https://www.typescriptlang.org)
-[![All Contributors](https://img.shields.io/badge/all_contributors-7-orange.svg?style=flat-square)](#contributors)
-[![License](https://img.shields.io/npm/l/fireorm.svg?style=flat)](https://www.npmjs.com/package/fireorm)
+[![NPM Version](https://img.shields.io/npm/v/fireorm-2024.svg?style=flat)](https://www.npmjs.com/package/fireorm-2024)
+[![Build Status](https://github.com/elersong/fireorm-2024/actions/workflows/ci.yml/badge.svg)](https://github.com/elersong/fireorm-2024)
+[![Typescript lang](https://img.shields.io/badge/Language-Typescript-lightskyblue.svg)](https://www.typescriptlang.org)
+[![All Contributors](https://img.shields.io/badge/Contributors-18-coral?style=flat)](#contributors)
+[![License](https://img.shields.io/badge/License-MIT-firebrick?style=flat)](https://opensource.org/license/mit)
 
 Fireorm is a tiny wrapper on top of firebase-admin that makes life easier when dealing with a Firestore database. Fireorm tries to ease the development of apps that rely on Firestore at the database layer by abstracting the access layer providing a familiar repository pattern. It basically helps us not worry about Firestore details and focus on what matters: adding cool new features!
 
