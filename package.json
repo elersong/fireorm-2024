@@ -1,5 +1,6 @@
 {
-  "name": "fireorm-2024",
+  "name": "fireorm24",
+  "version": "0.0.1",
   "description": "Extended version of fireorm, the ORM for Firestore",
   "author": "Grey Elerson <grey.l.elerson@gmail.com>",
   "contributors": [
@@ -10,11 +11,11 @@
   "main": "lib/src/index.js",
   "types": "lib/src/index.d.ts",
   "bugs": {
-    "url": "https://github.com/elersong/fireorm-2024/issues"
+    "url": "https://github.com/elersong/fireorm24/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/elersong/fireorm-2024.git"
+    "url": "git+https://github.com/elersong/fireorm24.git"
   },
   "keywords": [
     "firebase",

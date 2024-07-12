@@ -85,7 +85,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: yarn semantic-release
+        run: yarn semantic-release --first-release
 
       - name: Deploy documentation
         run: yarn deploy:doc

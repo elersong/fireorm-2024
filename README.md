@@ -1,16 +1,16 @@
-# 🔥 FireORM-2024 🔥
+# 🔥 FireORM24 🔥
 
-[![NPM Version](https://img.shields.io/npm/v/fireorm-2024.svg?style=flat)](https://www.npmjs.com/package/fireorm-2024)
-[![Build Status](https://github.com/elersong/fireorm-2024/actions/workflows/ci.yml/badge.svg)](https://github.com/elersong/fireorm-2024)
+[![NPM Version](https://img.shields.io/npm/v/fireorm24.svg?style=flat)](https://www.npmjs.com/package/fireorm24)
+[![Build Status](https://github.com/elersong/fireorm24/actions/workflows/ci.yml/badge.svg)](https://github.com/elersong/fireorm24)
 [![Typescript lang](https://img.shields.io/badge/Language-Typescript-lightskyblue.svg)](https://www.typescriptlang.org)
 [![All Contributors](https://img.shields.io/badge/Contributors-18-coral?style=flat)](#contributors)
 [![License](https://img.shields.io/badge/License-MIT-firebrick?style=flat)](https://opensource.org/license/mit)
 
 ## Introduction
 
-FireORM-2024 is a lightweight wrapper for firebase-admin designed to simplify interactions with Firestore databases. By abstracting the access layer and offering a familiar repository pattern, FireORM-2024 streamlines the development process for applications that use Firestore, allowing developers to concentrate on creating new features without dealing with the intricacies of Firestore.
+FireORM24 is a lightweight wrapper for firebase-admin designed to simplify interactions with Firestore databases. By abstracting the access layer and offering a familiar repository pattern, FireORM24 streamlines the development process for applications that use Firestore, allowing developers to concentrate on creating new features without dealing with the intricacies of Firestore.
 
-Willy Ovalle ([GH Profile](https://github.com/wovalle)), the original maintainer, stepped down from active support in March 2023. Since then, the project has been maintained through community contributions. The current effort, under the name FireORM-2024, focuses on updating the project with the latest security patches and new features to align with the latest Firebase advancements. The original project can be found [here](https://github.com/wovalle/fireorm).
+Willy Ovalle ([GH Profile](https://github.com/wovalle)), the original maintainer, stepped down from active support in March 2023. Since then, the project has been maintained through community contributions. The current effort, under the name FireORM24, focuses on updating the project with the latest security patches and new features to align with the latest Firebase advancements. The original project can be found [here](https://github.com/wovalle/fireorm).
 
 For more information on the motivations behind the project, you can read Willy's original [introductory post on Medium](https://medium.com/p/ba7734644684). The [API documentation](https://wovalle.github.io/fireorm) is also available.
 
@@ -20,7 +20,7 @@ For more information on the motivations behind the project, you can read Willy's
 1.  Install the npm package:
 
 ```bash
-yarn add fireorm-2024 reflect-metadata #or npm install fireorm-2024 reflect-metadata
+yarn add fireorm24 reflect-metadata #or npm install fireorm24 reflect-metadata
 
 # note: the reflect-metadata shim is required
 ```
@@ -52,7 +52,7 @@ fireorm.initialize(db);
 3.  Create your Firestore models:
 
 ```typescript
-import { Collection } from 'fireorm-2024';
+import { Collection } from 'fireorm24';
 
 @Collection()
 class Programmer {
@@ -65,7 +65,7 @@ class Programmer {
 4.  Manage your Firestore data with ease!
 
 ```typescript
-import { Collection, getRepository } from 'fireorm-2024';
+import { Collection, getRepository } from 'fireorm24';
 
 @Collection()
 class Programmer {
@@ -111,7 +111,7 @@ Currently, casting GeoPoints to a custom class requires `latitude: number` and `
 1.  Clone the project from github:
 
 ```bash
-git clone https://github.com/elersong/fireorm-2024.git
+git clone https://github.com/elersong/fireorm24.git
 ```
 
 2.  Install the dependencies:
@@ -189,7 +189,7 @@ Documentation is automatically deployed on each commit to master and is hosted i
 
 ## Contributing
 
-Have a bug or a feature request? Please visit the [new issues page](https://github.com/elersong/fireorm-2024/issues) on the FireORM-2024 repository. To contribute, check the new issues page to find a problem you would like to solve. Additionally, you can review the [old FireORM issues page](https://github.com/wovalle/fireorm/issues) to see if any requested features have not yet been reported to the new repository.
+Have a bug or a feature request? Please visit the [new issues page](https://github.com/elersong/fireorm24/issues) on the FireORM24 repository. To contribute, check the new issues page to find a problem you would like to solve. Additionally, you can review the [old FireORM issues page](https://github.com/wovalle/fireorm/issues) to see if any requested features have not yet been reported to the new repository.
 
 Pull requests are welcome!
 
@@ -374,7 +374,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
         <sub><b>Grey Elerson</b></sub>
       </a>
       <br />
-      <a href="https://github.com/elersong/fireorm-2024/commits?author=elersong" title="Code">💻</a>
+      <a href="https://github.com/elersong/fireorm24/commits?author=elersong" title="Code">💻</a>
       <a href="#ideas-elersong" title="Ideas, Planning, & Feedback">🤔</a>
     </td>
   </tr>
@@ -389,4 +389,4 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 
 ## License
 
-MIT © [Willy Ovalle](https://github.com/wovalle) and [Grey Elerson](https://github.com/elersong). See [LICENSE](https://github.com/elersong/fireorm-2024/blob/master/LICENSE) for details.
+MIT © [Willy Ovalle](https://github.com/wovalle) and [Grey Elerson](https://github.com/elersong). See [LICENSE](https://github.com/elersong/fireorm24/blob/master/LICENSE) for details.
