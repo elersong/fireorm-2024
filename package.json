@@ -1,10 +1,9 @@
 {
   "name": "fireorm-2024",
   "description": "Extended version of fireorm, the ORM for Firestore",
-  "version": "0.0.0-development",
-  "author": "Willy Ovalle <willyovalle16@gmail.com>",
+  "author": "Grey Elerson <grey.l.elerson@gmail.com>",
   "contributors": [
-    "Grey Elerson <grey.l.elerson@gmail.com>"
+    "Willy Ovalle <willyovalle16@gmail.com>"
   ],
   "homepage": "https://fireorm.js.org",
   "license": "ISC",
