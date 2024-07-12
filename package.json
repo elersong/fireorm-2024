@@ -1,5 +1,6 @@
 {
   "name": "fireorm-2024",
+  "version": "0.0.1",
   "description": "Extended version of fireorm, the ORM for Firestore",
   "author": "Grey Elerson <grey.l.elerson@gmail.com>",
   "contributors": [
