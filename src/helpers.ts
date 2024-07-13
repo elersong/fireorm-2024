@@ -1,16 +1,26 @@
 import { getMetadataStorage } from './MetadataUtils';
 import { BaseFirestoreRepository } from './BaseFirestoreRepository';
-import { IEntity, EntityConstructorOrPath, ITransactionReferenceStorage } from './types';
+import {
+  IEntity,
+  IEntityConstructor,
+  EntityConstructorOrPath,
+  ITransactionReferenceStorage,
+} from './types';
 import { FirestoreTransaction } from './Transaction/FirestoreTransaction';
 import { FirestoreBatch } from './Batch/FirestoreBatch';
+import { BaseRepository } from './BaseRepository';
+import { AbstractFirestoreRepository } from './AbstractFirestoreRepository';
 
 type RepositoryType = 'default' | 'base' | 'custom' | 'transaction';
 
 // TODO: return transaction repo. Is it needed?!?
-function _getRepository<T extends IEntity = IEntity>(
+function _getRepository<
+  T extends IEntity,
+  R extends BaseFirestoreRepository<T> = BaseFirestoreRepository<T>
+>(
   entityConstructorOrPath: EntityConstructorOrPath<T>,
-  repositoryType: RepositoryType
-): BaseFirestoreRepository<T> {
+  repositoryType?: RepositoryType // Optional parameter
+): R {
   const metadataStorage = getMetadataStorage();
 
   if (!metadataStorage.firestoreRef) {
@@ -25,7 +35,6 @@ function _getRepository<T extends IEntity = IEntity>(
       ? entityConstructorOrPath
       : entityConstructorOrPath.name;
 
-  // TODO: create tests
   if (!collection) {
     const error = isPath
       ? `'${collectionName}' is not a valid path for a collection`
@@ -35,31 +44,34 @@ function _getRepository<T extends IEntity = IEntity>(
 
   const repository = metadataStorage.getRepository(collection.entityConstructor);
 
-  if (repositoryType === 'custom' && !repository) {
+  const useCustomRepository = repositoryType === 'custom' || (!repositoryType && repository);
+
+  if (useCustomRepository && !repository) {
     throw new Error(`'${collectionName}' does not have a custom repository.`);
   }
 
-  // If the collection has a parent, check that we have registered the parent
   if (collection.parentEntityConstructor) {
     const parentCollection = metadataStorage.getCollection(collection.parentEntityConstructor);
-
     if (!parentCollection) {
       throw new Error(`'${collectionName}' does not have a valid parent collection.`);
     }
   }
 
-  const RepositoryClass =
-    repositoryType === 'custom' || (repositoryType === 'default' && repository)
-      ? (repository?.target as any)
-      : BaseFirestoreRepository;
+  const RepositoryClass = useCustomRepository
+    ? (repository?.target as new (pathOrConstructor: string | IEntityConstructor) => R)
+    : (BaseFirestoreRepository as new (pathOrConstructor: string | IEntityConstructor) => R);
 
   return new RepositoryClass(entityConstructorOrPath);
 }
 
-export function getRepository<T extends IEntity>(
-  entityConstructorOrPath: EntityConstructorOrPath<T>
-) {
-  return _getRepository(entityConstructorOrPath, 'default');
+export function getRepository<
+  T extends IEntity,
+  R extends BaseFirestoreRepository<T> = BaseFirestoreRepository<T>
+>(
+  entityConstructorOrPath: EntityConstructorOrPath<T>,
+  repositoryType?: RepositoryType // Optional parameter
+): R {
+  return _getRepository<T, R>(entityConstructorOrPath, repositoryType);
 }
 
 /**

@@ -134,8 +134,8 @@ export interface IEntity {
   id: string;
 }
 
-export type Constructor<T> = { new (): T };
-export type EntityConstructorOrPathConstructor<T extends IEntity> = { new (): T };
+export type Constructor<T> = { new (...args: any[]): T };
+export type EntityConstructorOrPathConstructor<T extends IEntity> = { new (...args: any[]): T };
 export type IEntityConstructor = Constructor<IEntity>;
 export type IEntityRepositoryConstructor = Constructor<IRepository<IEntity>>;
 export type EntityConstructorOrPath<T> = Constructor<T> | string;

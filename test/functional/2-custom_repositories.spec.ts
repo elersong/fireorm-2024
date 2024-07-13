@@ -6,25 +6,46 @@ describe('Integration test: Custom Repository', () => {
   @Collection(getUniqueColName('band-custom-repository'))
   class Band extends BandEntity {}
 
+  @Collection(getUniqueColName('bus-custom-repository'))
+  class Bus extends BandEntity {}
+
+  @CustomRepository(Bus)
+  class CustomBusRepository extends BaseFirestoreRepository<Bus> {}
+
   @CustomRepository(Band)
   class CustomRockBandRepository extends BaseFirestoreRepository<Band> {
     filterByGenre(genre: string) {
       return this.whereArrayContains('genres', genre);
     }
+
+    // Add clear method to remove all documents
+    async clear() {
+      const documents = await this.find();
+      const deletions = documents.map(doc => this.delete(doc.id));
+      await Promise.all(deletions);
+    }
   }
 
-  // getRepository will return the custom repository of Band
-  // (if it has the @CustomRepository decorator). Since typescript
-  // cannot guess dynamic types, we'll have to cast it to the
-  // custom repository
-  let rockBandRepository: CustomRockBandRepository = null;
+  let rockBandRepository;
+  let tourBusRepository;
 
   beforeEach(async () => {
     // see comment above
-    rockBandRepository = getRepository(Band) as CustomRockBandRepository;
+    rockBandRepository = getRepository(Band);
+    tourBusRepository = getRepository(Bus);
+
+    // Clear all documents
+    await rockBandRepository.clear();
 
     const seed = getInitialData().map(b => rockBandRepository.create(b));
     await Promise.all(seed);
+  });
+
+  it('should correctly set the type of the custom repository', async () => {
+    expect(rockBandRepository).toBeInstanceOf(CustomRockBandRepository);
+    expect(tourBusRepository).toBeInstanceOf(CustomBusRepository);
+    expect(rockBandRepository).not.toBeInstanceOf(CustomBusRepository);
+    expect(tourBusRepository).not.toBeInstanceOf(CustomRockBandRepository);
   });
 
   it('should use custom repository', async () => {
