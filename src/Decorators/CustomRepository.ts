@@ -1,6 +1,6 @@
 import { getMetadataStorage } from '../MetadataUtils';
 import { Constructor, IEntity } from '../types';
-import { BaseFirestoreRepository } from '../BaseFirestoreRepository';
+import { getBaseFirestoreRepositoryClass } from '../LazyLoaders';
 import { IEntityConstructor } from '../types';
 
 /**
@@ -15,9 +15,14 @@ import { IEntityConstructor } from '../types';
  * @returns {Function} - A decorator function that takes the repository class and registers it.
  */
 export function CustomRepository<T extends IEntity = IEntity>(entity: Constructor<T>) {
-  return function <U extends Constructor<BaseFirestoreRepository<T>>>(
-    target: U & { new (pathOrConstructor: string | IEntityConstructor): BaseFirestoreRepository<T> }
+  return function <U extends Constructor<any>>(
+    target: U & { new (pathOrConstructor: string | IEntityConstructor): any },
+    _?: any
   ): void {
+    const BaseFirestoreRepository = getBaseFirestoreRepositoryClass();
+    if (!Object.prototype.isPrototypeOf.call(BaseFirestoreRepository.prototype, target.prototype)) {
+      throw new Error('Custom repository must extend BaseFirestoreRepository');
+    }
     getMetadataStorage().setRepository({
       entity,
       target,
