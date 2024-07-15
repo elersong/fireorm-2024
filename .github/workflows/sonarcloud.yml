@@ -17,6 +17,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
+        id: setup-java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -45,7 +46,9 @@ jobs:
 
       - name: Ensure Java 17 is used
         run: |
-          echo "JAVA_HOME: ${JAVA_HOME}"
+          echo "JAVA_HOME: ${{ steps.setup-java.outputs.java-home }}"
+          export JAVA_HOME=${{ steps.setup-java.outputs.java-home }}
+          export PATH=${JAVA_HOME}/bin:${PATH}
           java -version
   
       - name: SonarCloud Scan
