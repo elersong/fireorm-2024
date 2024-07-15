@@ -54,9 +54,10 @@ jobs:
       - name: SonarCloud Scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          JAVA_HOME: ${{ steps.setup-java.outputs.java-home }}
         run: |
-          export JAVA_HOME=${{ steps.setup-java.outputs.java-home }}
-          export PATH=${JAVA_HOME}/bin:${PATH}
+          echo "Using JAVA_HOME: $JAVA_HOME"
+          export PATH="${JAVA_HOME}/bin:${PATH}"
           ~/.sonar/scanner/bin/sonar-scanner -X \
             -Dsonar.projectKey=fireorm24 \
             -Dsonar.organization=elersong \
