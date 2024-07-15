@@ -57,7 +57,7 @@ jobs:
         run: |
           export JAVA_HOME=${{ steps.setup-java.outputs.java-home }}
           export PATH=${JAVA_HOME}/bin:${PATH}
-          ~/.sonar/scanner/bin/sonar-scanner \
+          ~/.sonar/scanner/bin/sonar-scanner -X \
             -Dsonar.projectKey=fireorm24 \
             -Dsonar.organization=elersong \
             -Dsonar.host.url=https://sonarcloud.io \
