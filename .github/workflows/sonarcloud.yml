@@ -43,10 +43,17 @@ jobs:
           mv ~/.sonar/sonar-scanner-4.6.2.2472-linux ~/.sonar/scanner
           ~/.sonar/scanner/bin/sonar-scanner --version
 
+      - name: Ensure Java 17 is used
+        run: |
+          echo "JAVA_HOME: ${JAVA_HOME}"
+          java -version
+  
       - name: SonarCloud Scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          JAVA_HOME: ${{ steps.setup-java.outputs.java-home }} # Ensure JAVA_HOME is set to JDK 17
         run: |
+          export PATH="${JAVA_HOME}/bin:${PATH}"
           ~/.sonar/scanner/bin/sonar-scanner \
             -Dsonar.projectKey=fireorm24 \
             -Dsonar.organization=elersong \
