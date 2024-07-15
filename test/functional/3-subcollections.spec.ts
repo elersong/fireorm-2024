@@ -131,5 +131,4 @@ describe('Integration test: SubCollections', () => {
       expect(kc.albums).toBeInstanceOf(TransactionRepository);
     });
   });
-
 });
