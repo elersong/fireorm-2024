@@ -1,0 +1,27 @@
+name: SonarCloud
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  sonarcloud-code-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Disabling shallow clone to improve relevancy of reporting
+
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@v2.3.0  # Use the latest version from the marketplace
+        with:
+          args: >
+            -Dsonar.organization=elersong
+            -Dsonar.projectKey=elersong_fireorm24
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
