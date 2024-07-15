@@ -22,35 +22,43 @@ jobs:
         with:
           distribution: 'adopt'
           java-version: '17'
+          check-latest: true
 
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
+      # - name: Cache SonarCloud packages
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ~/.sonar/cache
+      #     key: ${{ runner.os }}-sonar-{{ hashFiles('**/*.lock') }}
 
-      - name: Cache SonarCloud scanner
-        id: cache-sonar-scanner
-        uses: actions/cache@v4
-        with:
-          path: ~/.sonar/scanner
-          key: ${{ runner.os }}-sonar-scanner
+      # - name: Cache SonarCloud scanner
+      #   id: cache-sonar-scanner
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ~/.sonar/scanner
+      #     key: ${{ runner.os }}-sonar-scanner-{{ hashFiles('**/*.lock') }}
 
       - name: Install SonarCloud scanner
-        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
         run: |
           curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip
           unzip sonar-scanner.zip -d ~/.sonar/
           mv ~/.sonar/sonar-scanner-4.6.2.2472-linux ~/.sonar/scanner
           ~/.sonar/scanner/bin/sonar-scanner --version
-  
+
+      - name: Ensure Java 17 is used
+        run: |
+          echo "JAVA_HOME: ${{ steps.setup-java.outputs.java-home }}"
+          export JAVA_HOME=${{ steps.setup-java.outputs.java-home }}
+          export PATH=${JAVA_HOME}/bin:${PATH}
+          java -version
+          echo "JAVA_HOME is set to $JAVA_HOME"
+
       - name: SonarCloud Scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           JAVA_HOME: ${{ steps.setup-java.outputs.java-home }}
+          PATH: ${{ steps.setup-java.outputs.java-home }}/bin:${{ env.PATH }}
         run: |
           echo "Using JAVA_HOME: $JAVA_HOME"
-          export PATH="${JAVA_HOME}/bin:${PATH}"
           ~/.sonar/scanner/bin/sonar-scanner -X \
             -Dsonar.projectKey=fireorm24 \
             -Dsonar.organization=elersong \
