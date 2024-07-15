@@ -127,7 +127,7 @@ describe('Integration test: SubCollections', () => {
 
     // Within a transaction, the subcollection should be a TransactionRepository
     fullBandRepository.runTransaction(async tran => {
-      let kc = await tran.findById('kc-sunshine-band');
+      const kc = await tran.findById('kc-sunshine-band');
       expect(kc.albums).toBeInstanceOf(TransactionRepository);
     });
   });
