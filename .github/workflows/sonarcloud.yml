@@ -23,5 +23,6 @@ jobs:
           args: >
             -Dsonar.organization=elersong
             -Dsonar.projectKey=elersong_fireorm24
+            -Dsonar.coverage.exclusions=**/*.spec.*
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
