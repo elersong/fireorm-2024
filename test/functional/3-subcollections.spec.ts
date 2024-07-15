@@ -1,5 +1,11 @@
 import { Band as BandEntity, Album as AlbumEntity, getInitialData } from '../fixture';
-import { getRepository, Collection, SubCollection, BaseFirestoreRepository, IEntity } from '../../src';
+import {
+  getRepository,
+  Collection,
+  SubCollection,
+  BaseFirestoreRepository,
+  IEntity,
+} from '../../src';
 import { getUniqueColName, makeUnique } from '../setup';
 import { TransactionRepository } from '../../src/Transaction/BaseFirestoreTransactionRepository';
 
@@ -133,7 +139,7 @@ describe('Integration test: SubCollections', () => {
   });
 
   // This test is limited by the inability to create two collections with the same
-  // entity constructor. This is because the entity constructor is used as the key 
+  // entity constructor. This is because the entity constructor is used as the key
   // in the collections map in MetadataStorage.
   it.skip('should handle nested subcollections within transactions', async () => {
     @Collection(getUniqueColName('label'))
@@ -143,42 +149,41 @@ describe('Integration test: SubCollections', () => {
       @SubCollection(FullBand, makeUnique('band-subcollection'))
       bands: BaseFirestoreRepository<FullBand>;
     }
-  
+
     const labelRepository = getRepository(Label);
     const label = new Label();
     label.id = 'elektra-records';
-  
+
     await labelRepository.create(label);
-  
+
     await labelRepository.runTransaction(async tran => {
       const elektra = await tran.findById('elektra-records');
-  
+
       const band = new FullBand();
       band.id = 'the-doors';
       band.name = 'The Doors';
       band.formationYear = 1965;
       band.genres = ['rock'];
-  
+
       await elektra.bands.create(band);
-  
+
       const album = new Album();
       album.id = 'strange-days';
       album.name = 'Strange Days';
       album.releaseDate = new Date('1967-09-25');
-  
+
       const theDoors = await elektra.bands.findById('the-doors');
       await theDoors.albums.create(album);
-  
+
       const fetchedAlbums = await theDoors.albums.find();
       expect(fetchedAlbums.length).toEqual(1);
       expect(fetchedAlbums[0].name).toEqual('Strange Days');
     });
-  
+
     const finalElektra = await labelRepository.findById('elektra-records');
     const finalDoors = await finalElektra.bands.findById('the-doors');
     const finalAlbums = await finalDoors.albums.find();
     expect(finalAlbums.length).toEqual(1);
     expect(finalAlbums[0].name).toEqual('Strange Days');
   });
-  
 });
