@@ -1,5 +1,6 @@
 import * as admin from 'firebase-admin';
 import { initialize } from '../src';
+import { randomUUID } from 'crypto';
 
 console.log('Running Integration Test Setup');
 
@@ -59,3 +60,5 @@ export const getUniqueColName = (col: string) => {
   console.log(`Now using collection: ${unique}`);
   return unique;
 };
+
+export const makeUnique = (name: string) => `${name}#${randomUUID()}`;

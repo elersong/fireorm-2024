@@ -1,6 +1,7 @@
 import { Band as BandEntity, Album as AlbumEntity, getInitialData } from '../fixture';
 import { getRepository, Collection, SubCollection, BaseFirestoreRepository } from '../../src';
-import { getUniqueColName } from '../setup';
+import { getUniqueColName, makeUnique } from '../setup';
+import { TransactionRepository } from '../../src/Transaction/BaseFirestoreTransactionRepository';
 
 describe('Integration test: SubCollections', () => {
   class Album extends AlbumEntity {}
@@ -22,7 +23,7 @@ describe('Integration test: SubCollections', () => {
 
     for (const s of seed) {
       const band = new FullBand();
-      band.id = s.band.id;
+      band.id = makeUnique(s.band.id);
       band.name = s.band.name;
       band.genres = s.band.genres;
       band.formationYear = s.band.formationYear;
@@ -33,7 +34,7 @@ describe('Integration test: SubCollections', () => {
 
       const albums = s.albums.map(a => {
         const album = new Album();
-        album.id = a.id;
+        album.id = makeUnique(a.id);
         album.releaseDate = a.releaseDate;
         album.name = a.name;
 
@@ -104,4 +105,31 @@ describe('Integration test: SubCollections', () => {
     const updatedRush = await fullBandRepository.findById('rush');
     expect(updatedRush.genres).toEqual(rush.genres);
   });
+
+  it('should reinitialize subcollections as TransactionRepository within transactions', async () => {
+    const band = new FullBand();
+    band.id = 'kc-sunshine-band';
+    band.name = 'KC and the Sunshine Band';
+    band.formationYear = 1973;
+    band.genres = ['disco'];
+
+    await fullBandRepository.create(band);
+
+    const album = new Album();
+    album.id = 'do-it-good';
+    album.name = 'Do It Good';
+    album.releaseDate = new Date('1974-03-01');
+
+    await band.albums.create(album);
+
+    // Outside of a transaction, it should be a BaseFirestoreRepository
+    expect(band.albums).toBeInstanceOf(BaseFirestoreRepository);
+
+    // Within a transaction, the subcollection should be a TransactionRepository
+    fullBandRepository.runTransaction(async tran => {
+      let kc = await tran.findById('kc-sunshine-band');
+      expect(kc.albums).toBeInstanceOf(TransactionRepository);
+    });
+  });
+
 });
