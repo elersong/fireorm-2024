@@ -22,6 +22,6 @@ jobs:
         with:
           args: >
             -Dsonar.organization=elersong
-            -Dsonar.projectKey=fireorm24
+            -Dsonar.projectKey=elersong_fireorm24
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
