@@ -72,10 +72,19 @@ describe('MetadataStorage', () => {
         'subSubEntity'
       );
 
+      const entityMetadataByConstructor = metadataStorage.getCollection(
+        SubSubEntity,
+        'subSubEntity'
+      );
+
       expect(entityMetadata?.entityConstructor).toEqual(subSubCol.entityConstructor);
+      expect(entityMetadataByConstructor?.entityConstructor).toEqual(subSubCol.entityConstructor);
       expect(entityMetadata?.name).toEqual(subSubCol.name);
+      expect(entityMetadataByConstructor?.name).toEqual(subSubCol.name);
       expect(entityMetadata?.segments).toEqual(['entity', 'subEntity', 'subSubEntity']);
+      expect(entityMetadataByConstructor?.segments).toEqual(['entity', 'subEntity', 'subSubEntity']);
       expect(entityMetadata?.subCollections.length).toEqual(0);
+      expect(entityMetadataByConstructor?.subCollections.length).toEqual(0);
     });
 
     // Remove previous functionality
@@ -91,7 +100,7 @@ describe('MetadataStorage', () => {
       );
     });
 
-    it.skip('should throw error if initialized with an invalid subcollection path', () => {
+    it('should return null if initialized with an invalid subcollection path', () => {
       const entityMetadata = metadataStorage.getCollection(
         'entity/entity-id/subEntity/subEntity-id/fake-path'
       );
@@ -113,8 +122,8 @@ describe('MetadataStorage', () => {
       );
     });
 
-    it.skip('should initialize subcollection metadata', () => {
-      const entityMetadata = metadataStorage.getCollection('entity');
+    it('should initialize subcollection metadata', () => {
+      const entityMetadata = metadataStorage.getCollection(Entity, 'entity');
 
       expect(entityMetadata?.subCollections.length).toEqual(1);
       expect(entityMetadata?.subCollections[0].entityConstructor).toEqual(subCol.entityConstructor);
@@ -144,7 +153,14 @@ describe('MetadataStorage', () => {
     it('should throw when trying to store duplicate collections', () => {
       metadataStorage.setCollection(col);
       expect(() => metadataStorage.setCollection(col)).toThrowError(
-        `Collection (class Entity {}) with name ${col.name} has already been registered`
+        `Collection<Entity> with name '${col.name}' has already been registered`
+      );
+    });
+
+    it('should throw when trying to store duplicate subcollections', () => {
+      metadataStorage.setCollection(subCol);
+      expect(() => metadataStorage.setCollection(subCol)).toThrowError(
+        `SubCollection<SubEntity> with name '${subCol.name}' and propertyKey '${subCol.propertyKey}' has already been registered`
       );
     });
 
