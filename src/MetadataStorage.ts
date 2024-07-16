@@ -12,13 +12,12 @@ import { arraysAreEqual } from './utils';
 export interface CollectionMetadata {
   name: string;
   entityConstructor: IEntityConstructor;
-  parentEntityConstructor?: IEntityConstructor;
-  propertyKey?: string;
 }
 
 export interface SubCollectionMetadata extends CollectionMetadata {
   parentEntityConstructor: IEntityConstructor;
   propertyKey: string;
+  parentName: string;
 }
 
 export interface CollectionMetadataWithSegments extends CollectionMetadata {
@@ -43,8 +42,10 @@ export interface MetadataStorageConfig {
   throwOnDuplicatedCollection?: boolean;
 }
 
+export type AnyCollectionMetadata = CollectionMetadata | SubCollectionMetadata | CollectionMetadataWithSegments | SubCollectionMetadataWithSegments;
+
 export class MetadataStorage {
-  readonly collections: Array<CollectionMetadataWithSegments> = [];
+  readonly collections: Array<CollectionMetadataWithSegments | SubCollectionMetadataWithSegments> = [];
   protected readonly repositories: Map<IEntityConstructor, RepositoryMetadata> = new Map();
 
   public config: MetadataStorageConfig = {
@@ -53,7 +54,21 @@ export class MetadataStorage {
     throwOnDuplicatedCollection: true,
   };
 
-  public getCollection = (pathOrConstructor: string | IEntityConstructor) => {
+  // Since metadata collections are stored in a flat array, we need a filter for types
+  private isSubCollectionMetadata = (collection: AnyCollectionMetadata): collection is SubCollectionMetadata  => {
+    return (collection as SubCollectionMetadata).parentEntityConstructor !== undefined;
+  }
+
+  private isSubCollectionMetadataWithSegments = (collection: AnyCollectionMetadata): collection is SubCollectionMetadataWithSegments => {
+    return (collection as SubCollectionMetadataWithSegments).parentEntityConstructor !== undefined;
+  }
+
+
+
+  public getCollection = (pathOrConstructor: string | IEntityConstructor, name?: string, propertyKey?: string) => {
+    // All collections have a pathOrConstructor and a name
+    // Subcollections have a propertyKey
+
     let collection: CollectionMetadataWithSegments | undefined;
 
     // If is a path like users/user-id/messages/message-id/senders,
@@ -62,9 +77,14 @@ export class MetadataStorage {
     if (typeof pathOrConstructor === 'string') {
       const segments = pathOrConstructor.split('/');
 
-      // Return null if incomplete segment
+      // Throw error if incomplete segment
       if (segments.length % 2 === 0) {
         throw new Error(`Invalid collection path: ${pathOrConstructor}`);
+      }
+
+      // Throw error if top level path. ex: 'users'
+      if (segments.length === 1) {
+        throw new Error(`Invalid collection path: ${pathOrConstructor}. Top level paths are not allowed. Must be a path to a subcollection.`);
       }
 
       const collectionSegments = segments.reduce<string[]>(
@@ -72,9 +92,11 @@ export class MetadataStorage {
         []
       );
 
-      collection = this.collections.find(c => arraysAreEqual(c.segments, collectionSegments));
+      const name = segments[segments.length - 1];
+
+      collection = this.collections.find(c => arraysAreEqual(c.segments, collectionSegments) && c.name === name);
     } else {
-      collection = this.collections.find(c => c.entityConstructor === pathOrConstructor);
+      collection = this.collections.find(c => c.entityConstructor === pathOrConstructor && c.name === name);
     }
 
     if (!collection) {
@@ -82,7 +104,7 @@ export class MetadataStorage {
     }
 
     const subCollections = this.collections.filter(
-      s => s.parentEntityConstructor === collection?.entityConstructor
+      s => this.isSubCollectionMetadataWithSegments(s) && s.parentEntityConstructor === collection?.entityConstructor && s.parentName === collection?.name
     ) as SubCollectionMetadataWithSegments[];
 
     return {
@@ -91,22 +113,63 @@ export class MetadataStorage {
     };
   };
 
-  public setCollection = (col: CollectionMetadata) => {
-    const existing = this.getCollection(col.entityConstructor);
+  public setCollection = (col: CollectionMetadata | SubCollectionMetadata) => {
+
+    const colIsSubCollection = this.isSubCollectionMetadata(col);
+
+    const existing = this.collections.find( c => {
+      if (colIsSubCollection) {
+        if (!this.isSubCollectionMetadata(c)) {
+          // automatically return false if the collection types of col and c don't match
+          return false;
+        }
+        // only a subcollection will have a propertyKey
+        return this.isSubCollectionMetadata(col) &&
+        c.entityConstructor === col.entityConstructor &&
+        c.propertyKey === col.propertyKey &&
+        c.name === col.name;
+      } else {
+        if (this.isSubCollectionMetadata(c)) {
+          // automatically return false if the collection types of col and c don't match
+          return false;
+        }
+        return c.entityConstructor === col.entityConstructor &&
+        c.name === col.name
+      }
+    });
+
     if (existing && this.config.throwOnDuplicatedCollection == true) {
-      throw new Error(`Collection with name ${existing.name} has already been registered`);
+      throw new Error(`Collection (${existing.entityConstructor}) with name ${existing.name} has already been registered`);
     }
-    const colToAdd = {
+
+    let colToAdd: CollectionMetadataWithSegments | SubCollectionMetadataWithSegments;
+    if (colIsSubCollection) {
+     colToAdd = {
       ...col,
+      propertyKey: col.propertyKey,
+      parentEntityConstructor: col.parentEntityConstructor,
+      parentName: col.parentName,
       segments: [col.name],
-    };
+     } as SubCollectionMetadataWithSegments;
+    } else {
+      colToAdd = {
+        ...col,
+        segments: [col.name],
+      } as CollectionMetadataWithSegments;
+    }
 
     this.collections.push(colToAdd);
 
-    const getWhereImParent = (p: Constructor<IEntity>) =>
-      this.collections.filter(c => c.parentEntityConstructor === p);
+    const findSubCollectionsOf = (collectionConstructor: Constructor<IEntity>, name: string) => {
+      return this.collections.filter(c => {
+        return this.isSubCollectionMetadataWithSegments(c) &&
+        c.parentEntityConstructor === collectionConstructor &&
+        c.parentName === name &&
+        c.segments.includes(name);
+      });
+    } 
 
-    const colsToUpdate = getWhereImParent(col.entityConstructor);
+    const colsToUpdate = findSubCollectionsOf(col.entityConstructor, col.name);
 
     // Update segments for subcollections and subcollections of subcollections
     while (colsToUpdate.length) {
@@ -116,9 +179,13 @@ export class MetadataStorage {
         return;
       }
 
-      const parent = this.collections.find(p => p.entityConstructor === c.parentEntityConstructor);
-      c.segments = parent?.segments.concat(c.name) || [];
-      getWhereImParent(c.entityConstructor).forEach(col => colsToUpdate.push(col));
+      const cIsSubCollection = this.isSubCollectionMetadataWithSegments(c);
+
+      const parentOfC = this.collections.find(
+        p => cIsSubCollection && p.entityConstructor === c.parentEntityConstructor && p.name === c.parentName
+      );
+      c.segments = parentOfC?.segments.concat(c.name) || [];
+      findSubCollectionsOf(c.entityConstructor, c.name).forEach(col => colsToUpdate.push(col));
     }
   };
 
