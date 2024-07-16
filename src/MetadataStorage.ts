@@ -92,9 +92,9 @@ export class MetadataStorage {
         []
       );
 
-      const name = segments[segments.length - 1];
+      const colName = name ? name : segments[segments.length - 1];
 
-      collection = this.collections.find(c => arraysAreEqual(c.segments, collectionSegments) && c.name === name);
+      collection = this.collections.find(c => arraysAreEqual(c.segments, collectionSegments) && c.name === colName);
     } else {
       collection = this.collections.find(c => c.entityConstructor === pathOrConstructor && c.name === name);
     }
@@ -139,7 +139,11 @@ export class MetadataStorage {
     });
 
     if (existing && this.config.throwOnDuplicatedCollection == true) {
-      throw new Error(`Collection (${existing.entityConstructor}) with name ${existing.name} has already been registered`);
+      if (this.isSubCollectionMetadata(existing)) {
+        throw new Error(`SubCollection<${existing.entityConstructor.name}> with name '${existing.name}' and propertyKey '${existing.propertyKey}' has already been registered`);
+      } else {
+        throw new Error(`Collection<${existing.entityConstructor.name}> with name '${existing.name}' has already been registered`);
+      }
     }
 
     let colToAdd: CollectionMetadataWithSegments | SubCollectionMetadataWithSegments;
@@ -164,8 +168,7 @@ export class MetadataStorage {
       return this.collections.filter(c => {
         return this.isSubCollectionMetadataWithSegments(c) &&
         c.parentEntityConstructor === collectionConstructor &&
-        c.parentName === name &&
-        c.segments.includes(name);
+        c.parentName === name;
       });
     } 
 
