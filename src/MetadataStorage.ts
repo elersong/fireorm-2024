@@ -9,22 +9,22 @@ import type {
 } from './types';
 import { arraysAreEqual } from './utils';
 
-export interface CollectionMetadata {
+export interface CollectionMetadata<T extends IEntity = IEntity> {
   name: string;
-  entityConstructor: IEntityConstructor;
+  entityConstructor: IEntityConstructor<T>;
 }
 
-export interface SubCollectionMetadata extends CollectionMetadata {
-  parentEntityConstructor: IEntityConstructor;
+export interface SubCollectionMetadata<T extends IEntity = IEntity> extends CollectionMetadata {
+  parentEntityConstructor: IEntityConstructor<T>;
   propertyKey: string;
   parentName: string;
 }
 
-export interface CollectionMetadataWithSegments extends CollectionMetadata {
+export interface CollectionMetadataWithSegments<T extends IEntity = IEntity> extends CollectionMetadata<T> {
   segments: string[];
 }
 
-export interface SubCollectionMetadataWithSegments extends SubCollectionMetadata {
+export interface SubCollectionMetadataWithSegments<T extends IEntity = IEntity> extends SubCollectionMetadata<T> {
   segments: string[];
 }
 
