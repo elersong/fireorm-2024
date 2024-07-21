@@ -16,11 +16,13 @@ describe('CollectionDecorator', () => {
     @Collection('foo')
     class Entity {
       id: string;
+      parentProps: null;
     }
 
     expect(setCollection).toHaveBeenCalledWith({
       name: 'foo',
       entityConstructor: Entity,
+      parentProps: null
     });
   });
 
@@ -33,6 +35,7 @@ describe('CollectionDecorator', () => {
     expect(setCollection).toHaveBeenCalledWith({
       name: 'Entities',
       entityConstructor: Entity,
+      parentProps: null
     });
   });
 });
