@@ -39,10 +39,11 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
 {
   protected readonly colMetadata: FullCollectionMetadata;
   protected readonly path: string;
+  protected readonly name: string; // TODO: Is this used?
   protected readonly config: MetadataStorageConfig;
   protected readonly firestoreColRef: CollectionReference;
 
-  constructor(pathOrConstructor: string | IEntityConstructor) {
+  constructor(pathOrConstructor: string | IEntityConstructor, colName: string) {
     super();
 
     const { getCollection, config, firestoreRef } = getMetadataStorage();
@@ -52,14 +53,15 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
     }
 
     this.config = config;
-    const colMetadata = getCollection(pathOrConstructor);
+    const colMetadata = getCollection(pathOrConstructor, colName);
 
     if (!colMetadata) {
-      throw new NoMetadataError(pathOrConstructor);
+      throw new NoMetadataError(colName);
     }
 
     this.colMetadata = colMetadata;
     this.path = typeof pathOrConstructor === 'string' ? pathOrConstructor : this.colMetadata.name;
+    this.name = colName;
     this.firestoreColRef = firestoreRef.collection(this.path);
   }
 
@@ -80,7 +82,7 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
         obj[key] = { id, path };
       } else if (isObject(val)) {
         this.transformFirestoreTypes(val);
-      }
+      } 
     });
     return obj;
   };
@@ -98,19 +100,23 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
 
     this.colMetadata.subCollections.forEach(subCol => {
       const pathWithSubCol = `${this.path}/${entity.id}/${subCol.name}`;
-      const { propertyKey } = subCol;
+      const parentPropertyKey = subCol.parentProps?.parentPropertyKey;
+
+      if (!parentPropertyKey) {
+        throw new Error(`Parent property key not found in registered subcollection of entity (${entity.constructor.name})`);
+      }
 
       // If we are inside a transaction, our subcollections should also be TransactionRepositories
       if (tran && tranRefStorage) {
         const firestoreTransaction = new FirestoreTransaction(tran, tranRefStorage);
         const repository = firestoreTransaction.getRepository(pathWithSubCol);
-        tranRefStorage.add({ propertyKey, path: pathWithSubCol, entity });
+        tranRefStorage.add({ parentPropertyKey, path: pathWithSubCol, entity });
         Object.assign(entity, {
-          [propertyKey]: repository,
+          [parentPropertyKey]: repository,
         });
       } else {
         Object.assign(entity, {
-          [propertyKey]: getRepository(pathWithSubCol),
+          [parentPropertyKey]: getRepository(pathWithSubCol),
         });
       }
     });
@@ -155,9 +161,10 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
     tran?: Transaction,
     tranRefStorage?: ITransactionReferenceStorage
   ): T => {
+    const transformedData = this.transformFirestoreTypes(doc.data() || {})
     const entity = plainToClass(this.colMetadata.entityConstructor, {
       id: doc.id,
-      ...this.transformFirestoreTypes(doc.data() || {}),
+      ...transformedData,
     }) as T;
 
     this.initializeSubCollections(entity, tran, tranRefStorage);
