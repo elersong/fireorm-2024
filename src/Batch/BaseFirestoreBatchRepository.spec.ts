@@ -11,8 +11,8 @@ import { getRepository } from '../helpers';
 const MockFirebase = require('mock-cloud-firestore');
 
 describe('BaseFirestoreBatchRepository', () => {
-  let bandBatchRepository: BaseFirestoreBatchRepository<Band> = null;
-  let bandRepository: BaseFirestoreRepository<Band> = null;
+  let bandBatchRepository: BaseFirestoreBatchRepository<Band>;
+  let bandRepository: BaseFirestoreRepository<Band>;
   let firestore: Firestore;
   let batch: FirestoreBatchUnit;
   let batchStub: jest.Mocked<WriteBatch>;
@@ -35,8 +35,8 @@ describe('BaseFirestoreBatchRepository', () => {
     initialize(firestore);
 
     batch = new FirestoreBatchUnit(firestore);
-    bandBatchRepository = new BaseFirestoreBatchRepository(Band, batch);
-    bandRepository = getRepository(Band);
+    bandBatchRepository = new BaseFirestoreBatchRepository(Band, batch, 'bands');
+    bandRepository = getRepository(Band, 'bands');
   });
 
   describe('create', () => {
@@ -127,7 +127,7 @@ describe('BaseFirestoreBatchRepository', () => {
       initialize(firestore, { validateModels: true });
 
       const validationBatch = new FirestoreBatchUnit(firestore);
-      const validationBandRepository = new BaseFirestoreBatchRepository(Band, validationBatch);
+      const validationBandRepository = new BaseFirestoreBatchRepository(Band, validationBatch, 'bands');
 
       const entity = new Band();
       entity.id = 'perfect-circle';
@@ -149,7 +149,7 @@ describe('BaseFirestoreBatchRepository', () => {
       initialize(firestore, { validateModels: true });
 
       const validationBatch = new FirestoreBatchUnit(firestore);
-      const validationBandRepository = new BaseFirestoreBatchRepository(Band, validationBatch);
+      const validationBandRepository = new BaseFirestoreBatchRepository(Band, validationBatch, 'bands');
 
       const entity = new Band();
       entity.id = 'perfect-circle';
@@ -170,7 +170,7 @@ describe('BaseFirestoreBatchRepository', () => {
       initialize(firestore, { validateModels: true, validatorOptions: {} });
 
       const validationBatch = new FirestoreBatchUnit(firestore);
-      const validationBandRepository = new BaseFirestoreBatchRepository(Band, validationBatch);
+      const validationBandRepository = new BaseFirestoreBatchRepository(Band, validationBatch, 'bands');
 
       let entity = new Band();
       entity = {
@@ -189,7 +189,7 @@ describe('BaseFirestoreBatchRepository', () => {
       });
 
       const validationBatch = new FirestoreBatchUnit(firestore);
-      const validationBandRepository = new BaseFirestoreBatchRepository(Band, validationBatch);
+      const validationBandRepository = new BaseFirestoreBatchRepository(Band, validationBatch, 'bands');
 
       let entity = new Band();
       entity = {

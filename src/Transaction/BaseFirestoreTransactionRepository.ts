@@ -17,10 +17,11 @@ export class TransactionRepository<T extends IEntity>
 {
   constructor(
     pathOrConstructor: EntityConstructorOrPath<T>,
+    colName: string,
     private transaction: Transaction,
     private tranRefStorage: ITransactionReferenceStorage
   ) {
-    super(pathOrConstructor);
+    super(pathOrConstructor, colName);
     this.transaction = transaction;
     this.tranRefStorage = tranRefStorage;
   }

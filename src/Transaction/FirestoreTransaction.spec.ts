@@ -24,7 +24,7 @@ describe('FirestoreTransaction', () => {
       const innerTran = {} as Transaction;
       const tran = new FirestoreTransaction(innerTran, new Set());
 
-      const bandRepository = tran.getRepository(Entity);
+      const bandRepository = tran.getRepository(Entity, 'Entities');
       expect(bandRepository.constructor.name).toEqual('TransactionRepository');
     });
   });

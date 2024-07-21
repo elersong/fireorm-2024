@@ -16,11 +16,11 @@ export class FirestoreTransaction implements IFirestoreTransaction {
     private tranRefStorage: ITransactionReferenceStorage
   ) {}
 
-  getRepository<T extends IEntity = IEntity>(entityOrConstructor: EntityConstructorOrPath<T>) {
+  getRepository<T extends IEntity = IEntity>(entityOrConstructor: EntityConstructorOrPath<T>, colName: string) {
     if (!metadataStorage.firestoreRef) {
       throw new Error('Firestore must be initialized first');
     }
 
-    return new TransactionRepository<T>(entityOrConstructor, this.transaction, this.tranRefStorage);
+    return new TransactionRepository<T>(entityOrConstructor, colName, this.transaction, this.tranRefStorage);
   }
 }

@@ -8,7 +8,7 @@ import { FirestoreBatch } from './FirestoreBatch';
 const MockFirebase = require('mock-cloud-firestore');
 
 describe('FirestoreBatch', () => {
-  let firestore: Firestore = undefined;
+  let firestore: Firestore;
 
   beforeEach(() => {
     const firebase = new MockFirebase();
@@ -25,7 +25,7 @@ describe('FirestoreBatch', () => {
 
       const tran = new FirestoreBatch(firestore);
 
-      const bandRepository = tran.getRepository(Entity);
+      const bandRepository = tran.getRepository(Entity, 'Entities');
       expect(bandRepository.constructor.name).toEqual('BaseFirestoreBatchRepository');
     });
   });
@@ -39,7 +39,7 @@ describe('FirestoreBatch', () => {
 
       const tran = new FirestoreBatch(firestore);
 
-      const bandRepository = tran.getSingleRepository(Entity);
+      const bandRepository = tran.getSingleRepository(Entity, 'Entities');
       expect(bandRepository.constructor.name).toEqual('FirestoreBatchSingleRepository');
     });
   });

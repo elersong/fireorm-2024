@@ -21,8 +21,8 @@ export class FirestoreBatch implements IFirestoreBatch {
    * @returns
    * @memberof FirestoreBatch
    */
-  getRepository<T extends IEntity>(pathOrConstructor: EntityConstructorOrPath<T>) {
-    return new BaseFirestoreBatchRepository(pathOrConstructor, this.batch);
+  getRepository<T extends IEntity>(pathOrConstructor: EntityConstructorOrPath<T>, collectionName?: string) {
+    return new BaseFirestoreBatchRepository(pathOrConstructor, this.batch, collectionName);
   }
 
   /**
@@ -35,8 +35,8 @@ export class FirestoreBatch implements IFirestoreBatch {
    * @returns
    * @memberof FirestoreBatch
    */
-  getSingleRepository<T extends IEntity>(pathOrConstructor: EntityConstructorOrPath<T>) {
-    return new FirestoreBatchSingleRepository(pathOrConstructor, this.batch);
+  getSingleRepository<T extends IEntity>(pathOrConstructor: EntityConstructorOrPath<T>, collectionName?: string) {
+    return new FirestoreBatchSingleRepository(pathOrConstructor, this.batch, collectionName);
   }
 
   /**
