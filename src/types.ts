@@ -97,7 +97,8 @@ export interface IFirestoreBatchSingleRepository<T extends IEntity> extends IBat
 export interface IFirestoreBatch {
   getRepository<T extends IEntity>(entity: Constructor<T>): IBatchRepository<T>;
   getSingleRepository<T extends IEntity>(
-    pathOrConstructor: EntityConstructorOrPath<T>
+    pathOrConstructor: EntityConstructorOrPath<T>,
+    collectionName: string
   ): IFirestoreBatchSingleRepository<T>;
 
   commit(): Promise<unknown>;
@@ -118,7 +119,7 @@ export type ITransactionRepository<T extends IEntity> = IRepository<T>;
 
 export interface ITransactionReference<T = IEntity> {
   entity: T;
-  propertyKey: string;
+  parentPropertyKey: string;
   path: string;
 }
 
@@ -141,7 +142,7 @@ export type IEntityRepositoryConstructor = Constructor<IRepository<IEntity>>;
 export type EntityConstructorOrPath<T> = Constructor<T> | string;
 
 export interface IFirestoreTransaction<T extends IEntity = IEntity> {
-  getRepository(entityOrConstructor: EntityConstructorOrPath<T>): IRepository<T>;
+  getRepository(entityOrConstructor: EntityConstructorOrPath<T>, colName: string): IRepository<T>;
 }
 
 /**
@@ -209,3 +210,12 @@ export interface ValidatorOptions {
 export type FirestoreSerializable = {
   [key: string]: FirebaseFirestore.FieldValue | Partial<unknown> | undefined;
 };
+
+/**
+ * A type that represents the parent properties of a sub-collection
+ */
+export type ParentProperties<T extends IEntity = IEntity> = {
+  parentEntityConstructor: IEntityConstructor<T>;
+  parentPropertyKey: string;
+  parentCollectionName: string;
+}
