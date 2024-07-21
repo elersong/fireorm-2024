@@ -3,7 +3,10 @@
   "include": ["Decorators"],
   "exclude": ["**/*.spec.ts"],
   "compilerOptions": {
-    "noEmit": true,
-    "strict": true
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "target": "ES6",
+    "module": "commonjs",
+    "strict": true,
   }
 }
