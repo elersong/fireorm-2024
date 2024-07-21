@@ -25,7 +25,7 @@ export class Album extends AlbumEntity {
   @Length(1, 50, { message: 'Name is too long' })
   name: string;
 
-  @SubCollection(AlbumImage, 'images')
+  @SubCollection(AlbumImage)
   images?: ISubCollection<AlbumImage>;
 }
 
@@ -45,7 +45,7 @@ export class Band {
   lastShowCoordinates: Coordinates;
   genres: Array<string>;
 
-  @SubCollection(Album, 'albums')
+  @SubCollection(Album)
   albums?: ISubCollection<Album>;
 
   @Type(() => FirestoreDocumentReference)
