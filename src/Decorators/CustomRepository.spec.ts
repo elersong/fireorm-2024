@@ -18,12 +18,13 @@ describe('CustomRepositoryDecorator', () => {
       id: string;
     }
 
-    @CustomRepository(Entity)
+    @CustomRepository(Entity, 'Entities')
     class EntityRepo extends BaseFirestoreRepository<Entity> {}
 
     expect(setRepository).toHaveBeenCalledWith({
       entity: Entity,
       target: EntityRepo,
+      collectionName: 'Entities',
     });
   });
 
@@ -33,7 +34,7 @@ describe('CustomRepositoryDecorator', () => {
     }
 
     const createInvalidRepo = () => {
-      @CustomRepository(Entity)
+      @CustomRepository(Entity, 'Entities')
       class InvalidRepo {
         id: string;
       }
@@ -50,7 +51,7 @@ describe('CustomRepositoryDecorator', () => {
       id: string;
     }
 
-    @CustomRepository(Entity)
+    @CustomRepository(Entity, 'Entities')
     class EntityRepo1 extends BaseFirestoreRepository<Entity> {}
 
     // Mock the behavior of setRepository to simulate existing repository registration
@@ -59,7 +60,7 @@ describe('CustomRepositoryDecorator', () => {
     });
 
     expect(() => {
-      @CustomRepository(Entity)
+      @CustomRepository(Entity, 'Entities')
       class EntityRepo2 extends BaseFirestoreRepository<Entity> {}
     }).toThrowError('Cannot register a custom repository twice with two different targets');
   });
