@@ -14,26 +14,29 @@ describe('Integration test: Serialized properties', () => {
     website: Website;
   }
 
-  @Collection(getUniqueColName('band-serialized-repository'))
+  const bandCollectionName: string = getUniqueColName('band-serialized-repository');
+  @Collection(bandCollectionName)
   class Band extends BandEntity {
     @Serialize(Website)
     website: Website;
   }
 
-  @Collection(getUniqueColName('band-serialized-repository'))
+  const deepBandCollectionName: string = getUniqueColName('band-serialized-repository');
+  @Collection(deepBandCollectionName)
   class DeepBand extends BandEntity {
     @Serialize(Manager)
     manager: Manager;
   }
 
-  @Collection(getUniqueColName('band-serialized-repository'))
+  const fancyBandCollectionName: string = getUniqueColName('band-serialized-repository');
+  @Collection(fancyBandCollectionName)
   class FancyBand extends BandEntity {
     @Serialize(Website)
     websites: Website[];
   }
 
   test('should instantiate serialized objects with the correct class upon retrieval', async () => {
-    const bandRepository = getRepository(Band);
+    const bandRepository = getRepository(Band, bandCollectionName);
     const dt = new Band();
     dt.name = 'DreamTheater';
     dt.formationYear = 1985;
@@ -50,7 +53,7 @@ describe('Integration test: Serialized properties', () => {
   });
 
   test('should instantiate serialized objects with the correct class upon retrieval recursively', async () => {
-    const bandRepository = getRepository(DeepBand);
+    const bandRepository = getRepository(DeepBand, deepBandCollectionName);
     const sb = new DeepBand();
     sb.name = 'the Speckled Band';
     sb.formationYear = 1931;
@@ -71,7 +74,7 @@ describe('Integration test: Serialized properties', () => {
   });
 
   test('should instantiate serialized objects arrays with the correct class upon retrieval', async () => {
-    const bandRepository = getRepository(FancyBand);
+    const bandRepository = getRepository(FancyBand, fancyBandCollectionName);
     const dt = new FancyBand();
     dt.name = 'DreamTheater';
     dt.formationYear = 1985;
