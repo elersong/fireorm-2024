@@ -9,13 +9,14 @@ describe('Integration test: Validations', () => {
   const firestore = (global as any).firestoreRef as Firestore;
   initialize(firestore, { validateModels: true });
 
-  @Collection(getUniqueColName('validations'))
+  const bandCollectionName: string = getUniqueColName('validations');
+  @Collection(bandCollectionName)
   class Band extends BandEntity {
     @IsEmail()
     contactEmail: string;
   }
 
-  const bandRepository = getRepository(Band);
+  const bandRepository = getRepository(Band, bandCollectionName);
 
   it('should do crud operations with validations', async () => {
     // Should create a band when passing a valid email
