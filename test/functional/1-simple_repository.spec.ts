@@ -3,13 +3,14 @@ import { Band as BandEntity } from '../fixture';
 import { getUniqueColName } from '../setup';
 
 describe('Integration test: Simple Repository', () => {
-  @Collection(getUniqueColName('band-simple-repository'))
+  const bandCollectionName: string = getUniqueColName('band-simple-repository');
+  @Collection(bandCollectionName)
   class Band extends BandEntity {
     extra?: { website: string };
   }
 
   test('should do crud operations', async () => {
-    const bandRepository = getRepository(Band);
+    const bandRepository = getRepository(Band, bandCollectionName);
     // Create a band
     const dt = new Band();
     dt.id = 'dream-theater';
