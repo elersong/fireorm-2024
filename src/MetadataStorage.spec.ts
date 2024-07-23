@@ -1,6 +1,7 @@
-import { MetadataStorage, RepositoryMetadata, EnforcedCollectionMetadata } from './MetadataStorage';
+import { MetadataStorage, RepositoryMetadata, EnforcedCollectionMetadata, validateRepositoryIndex } from './MetadataStorage';
 import { BaseFirestoreRepository } from './BaseFirestoreRepository';
 import { IRepository, Constructor } from './types';
+import { CollectionPathNotFoundError, IncompleteOrInvalidPathError, InvalidRepositoryIndexError } from './Errors';
 
 describe('MetadataStorage', () => {
   let metadataStorage: MetadataStorage;
@@ -95,15 +96,13 @@ describe('MetadataStorage', () => {
     });
 
     it('should throw error when using invalid collection path', () => {
-      expect(() => metadataStorage.getCollection('this_is_not_a_path')).toThrow(
-        'Invalid collection path: this_is_not_a_path.'
-      );
+      expect(() => metadataStorage.getCollection('this_is_not_a_path')).toThrow(CollectionPathNotFoundError);
     });
 
     it('should throw error if initialized with an invalid subcollection path', () => {
       expect(() =>
         metadataStorage.getCollection('entity/entity-id/subEntity/subEntity-id/fake-path')
-      ).toThrow('Invalid collection path: entity/entity-id/subEntity/subEntity-id/fake-path');
+      ).toThrow(CollectionPathNotFoundError);
     });
 
     it('should return null when using invalid collection constructor', () => {
@@ -137,6 +136,7 @@ describe('MetadataStorage', () => {
     });
   });
 
+  // TODO: Test that subcollections get their segments updated when a parent collection is added
   describe('setCollection', () => {
     it('should store collections', () => {
       metadataStorage.setCollection(col);
@@ -255,5 +255,24 @@ describe('MetadataStorage', () => {
         'Cannot register a custom repository on a class that does not inherit from BaseFirestoreRepository'
       );
     });
+  });
+
+  describe('validateRepositoryIndex', () => {
+    it('should throw error when repository index is invalid', () => {
+      expect(() => validateRepositoryIndex(['string'])).toThrowError(
+        'Invalid RepositoryIndex: Must be a tuple [string, (string | null)]'
+      );
+      expect(() => validateRepositoryIndex(['string', 'string', 'string'])).toThrow(InvalidRepositoryIndexError)
+    });
+
+    it('should not throw error when repository index is valid', () => {
+      expect(() => validateRepositoryIndex(['string', null])).not.toThrow();
+      expect(() => validateRepositoryIndex(['string', 'string'])).not.toThrow();
+    });
+  });
+
+  describe.skip('private methods', () => {
+    describe('isSubCollectionMetadata', () => {});
+    describe('isSameCollection', () => {});
   });
 });

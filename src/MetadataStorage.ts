@@ -9,6 +9,8 @@ import type {
   ParentProperties,
 } from './types';
 import { arraysAreEqual } from './utils';
+import { CollectionPathNotFoundError, CustomRepositoryInheritanceError, DuplicateCollectionError, DuplicateSubCollectionError, IncompleteOrInvalidPathError, InvalidRepositoryIndexError } from './Errors';
+import { CustomRepository } from './Decorators';
 
 // Unified collection metadata combines the metadata for both collections and subcollections
 export interface BaseCollectionMetadata<T extends IEntity = IEntity> {
@@ -49,15 +51,15 @@ export interface MetadataStorageConfig {
   throwOnDuplicatedCollection?: boolean;
 }
 
-// TODO: Refactor into validator fxn file and look for other validations to move
-function validateRepositoryIndex(input: any): asserts input is RepositoryIndex {
+// Make sure the input is a RepositoryIndex tuple
+export function validateRepositoryIndex(input: any): asserts input is RepositoryIndex {
   if (
     !Array.isArray(input) ||
     input.length !== 2 ||
     typeof input[0] !== 'string' ||
     (input[1] !== null && typeof input[1] !== 'string')
   ) {
-    throw new Error('Invalid input: Must be a tuple [string, string | null]');
+    throw new InvalidRepositoryIndexError();
   }
 }
 
@@ -112,18 +114,16 @@ export class MetadataStorage {
     if (typeof pathOrConstructor === 'string') {
       // TODO: Refactor with getLastSegment
       const segments = pathOrConstructor.split('/');
-      const colName = collectionName ? collectionName : segments[segments.length - 1];
+      const colName = collectionName || segments[segments.length - 1];
 
       // Throw error if incomplete segment
-      // TODO: IncompletePathError
       if (segments.length % 2 === 0) {
-        throw new Error(`Invalid collection path: ${pathOrConstructor}.`);
+        throw new IncompleteOrInvalidPathError(pathOrConstructor);
       }
 
       // Throw error if path segment doesn't exist
-      // TODO: NotFoundError
       if (!this.collections.map(col => col.name).includes(colName)) {
-        throw new Error(`Invalid collection path: ${pathOrConstructor}.`);
+        throw new CollectionPathNotFoundError(pathOrConstructor);
       }
 
       const collectionSegments = segments.reduce<string[]>(
@@ -164,13 +164,9 @@ export class MetadataStorage {
 
     if (existing && this.config.throwOnDuplicatedCollection == true) {
       if (colIsSubCollection) {
-        throw new Error(
-          `SubCollection<${existing.entityConstructor.name}> with name '${existing.name}' and propertyKey '${existing.parentProps?.parentPropertyKey}' has already been registered`
-        );
+        throw new DuplicateSubCollectionError(existing.entityConstructor.name, existing.name, existing.parentProps?.parentPropertyKey);
       } else {
-        throw new Error(
-          `Collection<${existing.entityConstructor.name}> with name '${existing.name}' has already been registered`
-        );
+        throw new DuplicateCollectionError(existing.entityConstructor.name, existing.name);
       }
     }
 
@@ -222,18 +218,8 @@ export class MetadataStorage {
   };
 
   public setRepository = (repo: RepositoryMetadata) => {
-    //const savedRepo = this.getRepository(repo.entity);
-
-    // if (savedRepo && repo.target !== savedRepo.target) {
-    //   // TODO: DuplicatedRepositoryError
-    //   // yes we can have the same entity with different repositories, as long as the collectionName is different
-    //   throw new Error('Cannot register a custom repository twice with two different targets');
-    // }
-
     if (!(repo.target.prototype instanceof BaseRepository)) {
-      throw new Error(
-        'Cannot register a custom repository on a class that does not inherit from BaseFirestoreRepository'
-      );
+      throw new CustomRepositoryInheritanceError();
     }
 
     const repo_index = [repo.entity.name, repo.collectionName ? repo.collectionName : null];
