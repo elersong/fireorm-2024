@@ -5,8 +5,7 @@ on:
     branches:
       - master
   pull_request:
-    branches:
-      - master
+    types: [opened, synchronize, reopened]
 
 jobs:
   sonarcloud-code-quality:
@@ -17,12 +16,28 @@ jobs:
         with:
           fetch-depth: 0  # Disabling shallow clone to improve relevancy of reporting
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests and generate coverage report
+        run: npm test -- --coverage
+
+      - name: Check if lcov.info exists
+        run: ls -la coverage/
+
       - name: SonarCloud Scan
-        uses: sonarsource/sonarcloud-github-action@v2.3.0  # Use the latest version from the marketplace
+        uses: sonarsource/sonarcloud-github-action@master
         with:
           args: >
             -Dsonar.organization=elersong
             -Dsonar.projectKey=elersong_fireorm24
             -Dsonar.coverage.exclusions=**/*.spec.*,src/test/**
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
