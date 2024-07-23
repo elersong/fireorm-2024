@@ -37,19 +37,29 @@ export class CollectionPathNotFoundError extends Error {
 }
 
 export class DuplicateSubCollectionError extends Error {
-  constructor(entityConstructorName: string, subCollectionName: string, parentPropertyKey: string|undefined) {
-    super(`SubCollection<${entityConstructorName}> with name '${subCollectionName}' and propertyKey '${parentPropertyKey}' has already been registered`);
+  constructor(
+    entityConstructorName: string,
+    subCollectionName: string,
+    parentPropertyKey: string | undefined
+  ) {
+    super(
+      `SubCollection<${entityConstructorName}> with name '${subCollectionName}' and propertyKey '${parentPropertyKey}' has already been registered`
+    );
   }
 }
 
 export class DuplicateCollectionError extends Error {
   constructor(entityConstructorName: string, collectionName: string) {
-    super(`Collection<${entityConstructorName}> with name '${collectionName}' has already been registered`);
+    super(
+      `Collection<${entityConstructorName}> with name '${collectionName}' has already been registered`
+    );
   }
 }
 
 export class CustomRepositoryInheritanceError extends Error {
   constructor() {
-    super('Cannot register a custom repository on a class that does not inherit from BaseFirestoreRepository');
+    super(
+      'Cannot register a custom repository on a class that does not inherit from BaseFirestoreRepository'
+    );
   }
 }

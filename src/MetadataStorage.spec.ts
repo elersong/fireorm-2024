@@ -1,7 +1,16 @@
-import { MetadataStorage, RepositoryMetadata, EnforcedCollectionMetadata, validateRepositoryIndex } from './MetadataStorage';
+import {
+  MetadataStorage,
+  RepositoryMetadata,
+  EnforcedCollectionMetadata,
+  validateRepositoryIndex,
+} from './MetadataStorage';
 import { BaseFirestoreRepository } from './BaseFirestoreRepository';
 import { IRepository, Constructor } from './types';
-import { CollectionPathNotFoundError, IncompleteOrInvalidPathError, InvalidRepositoryIndexError } from './Errors';
+import {
+  CollectionPathNotFoundError,
+  IncompleteOrInvalidPathError,
+  InvalidRepositoryIndexError,
+} from './Errors';
 
 describe('MetadataStorage', () => {
   let metadataStorage: MetadataStorage;
@@ -96,7 +105,9 @@ describe('MetadataStorage', () => {
     });
 
     it('should throw error when using invalid collection path', () => {
-      expect(() => metadataStorage.getCollection('this_is_not_a_path')).toThrow(CollectionPathNotFoundError);
+      expect(() => metadataStorage.getCollection('this_is_not_a_path')).toThrow(
+        CollectionPathNotFoundError
+      );
     });
 
     it('should throw error if initialized with an invalid subcollection path', () => {
@@ -262,7 +273,9 @@ describe('MetadataStorage', () => {
       expect(() => validateRepositoryIndex(['string'])).toThrowError(
         'Invalid RepositoryIndex: Must be a tuple [string, (string | null)]'
       );
-      expect(() => validateRepositoryIndex(['string', 'string', 'string'])).toThrow(InvalidRepositoryIndexError)
+      expect(() => validateRepositoryIndex(['string', 'string', 'string'])).toThrow(
+        InvalidRepositoryIndexError
+      );
     });
 
     it('should not throw error when repository index is valid', () => {
@@ -297,8 +310,8 @@ describe('MetadataStorage', () => {
             parentCollectionName: 'test2',
             parentEntityConstructor: TestClass2,
             parentPropertyKey: 'test',
-        }} as EnforcedCollectionMetadata<TestClass>;
-
+          },
+        } as EnforcedCollectionMetadata<TestClass>;
 
         const result = (classInstance as any)['isSubCollectionMetadata'](subCollectioMetadata);
         expect(result).toEqual(true);
@@ -317,9 +330,8 @@ describe('MetadataStorage', () => {
         const subCollectioMetadata = {
           entityConstructor: TestClass,
           name: 'test',
-          parentProps: null
+          parentProps: null,
         } as EnforcedCollectionMetadata<TestClass>;
-
 
         const result = (classInstance as any)['isSubCollectionMetadata'](subCollectioMetadata);
         expect(result).toEqual(false);
@@ -327,7 +339,7 @@ describe('MetadataStorage', () => {
         expect(result2).toEqual(false);
       });
     });
-    
+
     describe('isSameCollection', () => {
       it('should return true when inputs are equivalent values', () => {
         class TestClass {
@@ -342,12 +354,14 @@ describe('MetadataStorage', () => {
         const subCollectioMetadata = {
           entityConstructor: TestClass,
           name: 'test',
-          parentProps: null
+          parentProps: null,
         } as EnforcedCollectionMetadata<TestClass>;
         const sameCollectionMetadata = subCollectioMetadata;
 
-
-        const result = (classInstance as any)['isSameCollection'](subCollectioMetadata, sameCollectionMetadata);
+        const result = (classInstance as any)['isSameCollection'](
+          subCollectioMetadata,
+          sameCollectionMetadata
+        );
         expect(result).toEqual(true);
       });
 
@@ -364,13 +378,15 @@ describe('MetadataStorage', () => {
         const subCollectioMetadata = {
           entityConstructor: TestClass,
           name: 'test',
-          parentProps: null
+          parentProps: null,
         } as EnforcedCollectionMetadata<TestClass>;
-        const sameCollectionMetadata = {...subCollectioMetadata};
+        const sameCollectionMetadata = { ...subCollectioMetadata };
         sameCollectionMetadata.name = 'test2';
 
-
-        const result = (classInstance as any)['isSameCollection'](subCollectioMetadata, sameCollectionMetadata);
+        const result = (classInstance as any)['isSameCollection'](
+          subCollectioMetadata,
+          sameCollectionMetadata
+        );
         expect(result).toEqual(false);
       });
     });

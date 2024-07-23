@@ -9,7 +9,14 @@ import type {
   ParentProperties,
 } from './types';
 import { arraysAreEqual } from './utils';
-import { CollectionPathNotFoundError, CustomRepositoryInheritanceError, DuplicateCollectionError, DuplicateSubCollectionError, IncompleteOrInvalidPathError, InvalidRepositoryIndexError } from './Errors';
+import {
+  CollectionPathNotFoundError,
+  CustomRepositoryInheritanceError,
+  DuplicateCollectionError,
+  DuplicateSubCollectionError,
+  IncompleteOrInvalidPathError,
+  InvalidRepositoryIndexError,
+} from './Errors';
 import { CustomRepository } from './Decorators';
 
 // Unified collection metadata combines the metadata for both collections and subcollections
@@ -164,7 +171,11 @@ export class MetadataStorage {
 
     if (existing && this.config.throwOnDuplicatedCollection == true) {
       if (colIsSubCollection) {
-        throw new DuplicateSubCollectionError(existing.entityConstructor.name, existing.name, existing.parentProps?.parentPropertyKey);
+        throw new DuplicateSubCollectionError(
+          existing.entityConstructor.name,
+          existing.name,
+          existing.parentProps?.parentPropertyKey
+        );
       } else {
         throw new DuplicateCollectionError(existing.entityConstructor.name, existing.name);
       }
