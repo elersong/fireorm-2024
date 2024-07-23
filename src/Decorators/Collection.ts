@@ -26,7 +26,7 @@ export function Collection(collectionName?: string) {
               parentEntityConstructor: constructor,
               parentPropertyKey: subCollection.propertyKey,
               parentCollectionName: constructor.prototype.collectionName,
-            }
+            },
           });
 
           // Check and process next level down (if it exists)
@@ -45,7 +45,7 @@ export function Collection(collectionName?: string) {
     getMetadataStorage().setCollection({
       name: entityConstructor.prototype.collectionName,
       entityConstructor,
-      parentProps: null
+      parentProps: null,
     });
 
     // Clear out the collectionName property from the prototype, so others collections

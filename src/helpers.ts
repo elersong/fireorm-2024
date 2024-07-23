@@ -40,7 +40,6 @@ function _getRepository<
 
   const collection = metadataStorage.getCollection(entityConstructorOrPath, collectionName);
 
-
   if (!collection) {
     const error = isPath
       ? `'${collectionName}' is not a valid path for a collection`
@@ -59,20 +58,27 @@ function _getRepository<
   // Get the parent collection if it exists
   if (collection.parentProps) {
     const { parentCollectionName, parentEntityConstructor } = collection.parentProps;
-    const parentCollection = metadataStorage.getCollection(parentEntityConstructor, parentCollectionName);
+    const parentCollection = metadataStorage.getCollection(
+      parentEntityConstructor,
+      parentCollectionName
+    );
     if (!parentCollection) {
       throw new Error(`'${collectionName}' does not have a valid parent collection.`);
     }
   }
 
   const RepositoryClass = useCustomRepository
-    ? (repository?.target as new (pathOrConstructor: string | IEntityConstructor, colName: string) => R)
-    : (BaseFirestoreRepository as new (pathOrConstructor: string | IEntityConstructor, colName: string) => R);
+    ? (repository?.target as new (
+        pathOrConstructor: string | IEntityConstructor,
+        colName: string
+      ) => R)
+    : (BaseFirestoreRepository as new (
+        pathOrConstructor: string | IEntityConstructor,
+        colName: string
+      ) => R);
 
   return new RepositoryClass(entityConstructorOrPath, collectionName);
 }
-
-
 
 export function getRepository<
   T extends IEntity,
@@ -90,7 +96,10 @@ export function getRepository<
  */
 export const GetRepository = getRepository;
 
-export function getCustomRepository<T extends IEntity>(entityOrPath: EntityConstructorOrPath<T>, collectionName: string) {
+export function getCustomRepository<T extends IEntity>(
+  entityOrPath: EntityConstructorOrPath<T>,
+  collectionName: string
+) {
   // TODO: Add tests for calling this with both an entity and a path
   if (!collectionName) {
     throw new Error('Collection name is required when using an entity constructor.');
@@ -102,9 +111,10 @@ export function getCustomRepository<T extends IEntity>(entityOrPath: EntityConst
  */
 export const GetCustomRepository = getCustomRepository;
 
-
-
-export function getBaseRepository<T extends IEntity>(entityOrPath: EntityConstructorOrPath<T>, collectionName: string) {
+export function getBaseRepository<T extends IEntity>(
+  entityOrPath: EntityConstructorOrPath<T>,
+  collectionName: string
+) {
   // TODO: Add tests for calling this with both an entity and a path
   if (!collectionName) {
     throw new Error('Collection name is required when using an entity constructor.');
@@ -115,8 +125,6 @@ export function getBaseRepository<T extends IEntity>(entityOrPath: EntityConstru
  * @deprecated Use getBaseRepository. This will be removed in a future version.
  */
 export const GetBaseRepository = getBaseRepository;
-
-
 
 export const runTransaction = async <T>(executor: (tran: FirestoreTransaction) => Promise<T>) => {
   const metadataStorage = getMetadataStorage();

@@ -20,9 +20,12 @@ interface EnforcedParentProperties<T extends IEntity = IEntity> {
   parentProps: ParentProperties<T> | null;
 }
 
-export interface EnforcedCollectionMetadata<T extends IEntity = IEntity> extends BaseCollectionMetadata<T>, EnforcedParentProperties<T> {}
+export interface EnforcedCollectionMetadata<T extends IEntity = IEntity>
+  extends BaseCollectionMetadata<T>,
+    EnforcedParentProperties<T> {}
 
-export interface CollectionMetadataWithSegments<T extends IEntity = IEntity> extends EnforcedCollectionMetadata<T> {
+export interface CollectionMetadataWithSegments<T extends IEntity = IEntity>
+  extends EnforcedCollectionMetadata<T> {
   segments: string[];
 }
 
@@ -58,7 +61,6 @@ function validateRepositoryIndex(input: any): asserts input is RepositoryIndex {
   }
 }
 
-
 export class MetadataStorage {
   readonly collections: Array<CollectionMetadataWithSegments> = [];
   protected readonly repositories: Map<string, RepositoryMetadata> = new Map();
@@ -69,20 +71,31 @@ export class MetadataStorage {
     throwOnDuplicatedCollection: true,
   };
 
-  private isSubCollectionMetadata<T extends IEntity>(collection: EnforcedCollectionMetadata<T>): boolean {
-    return !!collection.parentProps &&
+  private isSubCollectionMetadata<T extends IEntity>(
+    collection: EnforcedCollectionMetadata<T>
+  ): boolean {
+    return (
+      !!collection.parentProps &&
       // Now check for validity of parentProps
       collection.parentProps.parentEntityConstructor !== null &&
       collection.parentProps.parentPropertyKey !== null &&
-      collection.parentProps.parentCollectionName !== null;
-  } 
+      collection.parentProps.parentCollectionName !== null
+    );
+  }
 
-  private isSameCollection<T extends IEntity>(collection1: EnforcedCollectionMetadata<T>, collection2: EnforcedCollectionMetadata<T>): boolean {
-    return collection1.entityConstructor === collection2.entityConstructor &&
+  private isSameCollection<T extends IEntity>(
+    collection1: EnforcedCollectionMetadata<T>,
+    collection2: EnforcedCollectionMetadata<T>
+  ): boolean {
+    return (
+      collection1.entityConstructor === collection2.entityConstructor &&
       collection1.name === collection2.name &&
-      collection1.parentProps?.parentEntityConstructor === collection2.parentProps?.parentEntityConstructor &&
+      collection1.parentProps?.parentEntityConstructor ===
+        collection2.parentProps?.parentEntityConstructor &&
       collection1.parentProps?.parentPropertyKey === collection2.parentProps?.parentPropertyKey &&
-      collection1.parentProps?.parentCollectionName === collection2.parentProps?.parentCollectionName;
+      collection1.parentProps?.parentCollectionName ===
+        collection2.parentProps?.parentCollectionName
+    );
   }
 
   public getCollection = (
@@ -90,9 +103,9 @@ export class MetadataStorage {
     collectionName?: string
   ): FullCollectionMetadata | null => {
     // All collections have a pathOrConstructor and a name
-  
-    let collection: CollectionMetadataWithSegments  | undefined;
-  
+
+    let collection: CollectionMetadataWithSegments | undefined;
+
     // If it is a path like users/user-id/messages/message-id/senders,
     // take all the even segments [users/messages/senders] and
     // look for an entity with those segments
@@ -100,7 +113,7 @@ export class MetadataStorage {
       // TODO: Refactor with getLastSegment
       const segments = pathOrConstructor.split('/');
       const colName = collectionName ? collectionName : segments[segments.length - 1];
-  
+
       // Throw error if incomplete segment
       // TODO: IncompletePathError
       if (segments.length % 2 === 0) {
@@ -109,25 +122,29 @@ export class MetadataStorage {
 
       // Throw error if path segment doesn't exist
       // TODO: NotFoundError
-      if(!(this.collections.map(col => col.name).includes(colName))) {
+      if (!this.collections.map(col => col.name).includes(colName)) {
         throw new Error(`Invalid collection path: ${pathOrConstructor}.`);
       }
-  
+
       const collectionSegments = segments.reduce<string[]>(
         (acc, cur, index) => (index % 2 === 0 ? acc.concat(cur) : acc),
         []
       );
-  
+
       // TODO: Is the name check necessary? The name is included within the segments.
-      collection = this.collections.find(c => arraysAreEqual(c.segments, collectionSegments) && c.name === colName);
+      collection = this.collections.find(
+        c => arraysAreEqual(c.segments, collectionSegments) && c.name === colName
+      );
     } else {
-      collection = this.collections.find(c => c.entityConstructor === pathOrConstructor && c.name === collectionName);
+      collection = this.collections.find(
+        c => c.entityConstructor === pathOrConstructor && c.name === collectionName
+      );
     }
-  
+
     if (!collection) {
       return null;
     }
-  
+
     const subCollections = this.collections.filter(
       s =>
         this.isSubCollectionMetadata(s) &&
@@ -138,34 +155,41 @@ export class MetadataStorage {
     return { ...collection, subCollections } as FullCollectionMetadata;
   };
 
-
   public setCollection = (col: EnforcedCollectionMetadata) => {
     const colIsSubCollection = this.isSubCollectionMetadata(col);
 
-    const existing = this.collections.find( registeredCollection => this.isSameCollection(registeredCollection, col) );
+    const existing = this.collections.find(registeredCollection =>
+      this.isSameCollection(registeredCollection, col)
+    );
 
     if (existing && this.config.throwOnDuplicatedCollection == true) {
       if (colIsSubCollection) {
-        throw new Error(`SubCollection<${existing.entityConstructor.name}> with name '${existing.name}' and propertyKey '${existing.parentProps?.parentPropertyKey}' has already been registered`);
+        throw new Error(
+          `SubCollection<${existing.entityConstructor.name}> with name '${existing.name}' and propertyKey '${existing.parentProps?.parentPropertyKey}' has already been registered`
+        );
       } else {
-        throw new Error(`Collection<${existing.entityConstructor.name}> with name '${existing.name}' has already been registered`);
+        throw new Error(
+          `Collection<${existing.entityConstructor.name}> with name '${existing.name}' has already been registered`
+        );
       }
     }
 
-    let colToAdd: CollectionMetadataWithSegments = {
+    const colToAdd: CollectionMetadataWithSegments = {
       ...col,
       segments: [col.name],
-     };
+    };
 
     this.collections.push(colToAdd);
 
     const findSubCollectionsOf = (collectionConstructor: Constructor<IEntity>, name: string) => {
       return this.collections.filter(registeredCollection => {
-        return this.isSubCollectionMetadata(registeredCollection) &&
-        registeredCollection.parentProps?.parentEntityConstructor === collectionConstructor &&
-        registeredCollection.parentProps?.parentCollectionName === name;
+        return (
+          this.isSubCollectionMetadata(registeredCollection) &&
+          registeredCollection.parentProps?.parentEntityConstructor === collectionConstructor &&
+          registeredCollection.parentProps?.parentCollectionName === name
+        );
       });
-    } 
+    };
 
     const colsToUpdate = findSubCollectionsOf(col.entityConstructor, col.name);
 
@@ -178,10 +202,16 @@ export class MetadataStorage {
       }
 
       const parentOfThisSubCollection = this.collections.find(
-        p =>  p.entityConstructor === registeredSubCollection.parentProps?.parentEntityConstructor && p.name === registeredSubCollection.parentProps?.parentCollectionName
+        p =>
+          p.entityConstructor === registeredSubCollection.parentProps?.parentEntityConstructor &&
+          p.name === registeredSubCollection.parentProps?.parentCollectionName
       );
-      registeredSubCollection.segments = parentOfThisSubCollection?.segments.concat(registeredSubCollection.name) || [];
-      findSubCollectionsOf(registeredSubCollection.entityConstructor, registeredSubCollection.name).forEach(col => colsToUpdate.push(col));
+      registeredSubCollection.segments =
+        parentOfThisSubCollection?.segments.concat(registeredSubCollection.name) || [];
+      findSubCollectionsOf(
+        registeredSubCollection.entityConstructor,
+        registeredSubCollection.name
+      ).forEach(col => colsToUpdate.push(col));
     }
   };
 

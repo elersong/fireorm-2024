@@ -4,18 +4,16 @@ export class NoMetadataError extends Error {
   constructor(pathOrConstructorOrCollectionName: EntityConstructorOrPath<IEntity>) {
     let name;
     if (typeof pathOrConstructorOrCollectionName === 'string') {
-      if (pathOrConstructorOrCollectionName.includes("/")) {
+      if (pathOrConstructorOrCollectionName.includes('/')) {
         // String is a path to a subcollection
-        name = `subcollection named: ${pathOrConstructorOrCollectionName}`
+        name = `subcollection named: ${pathOrConstructorOrCollectionName}`;
       } else {
         // String is a top level collection name
-        name = `collection named: ${pathOrConstructorOrCollectionName}`
+        name = `collection named: ${pathOrConstructorOrCollectionName}`;
       }
     } else {
-      name = `constructor named: ${pathOrConstructorOrCollectionName.name}` 
+      name = `constructor named: ${pathOrConstructorOrCollectionName.name}`;
     }
-    super(
-      `There is no metadata stored for "${ name }"`
-    );
+    super(`There is no metadata stored for "${name}"`);
   }
 }

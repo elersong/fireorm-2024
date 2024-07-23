@@ -33,7 +33,7 @@ export class Album extends AlbumEntity {
 export class Band {
   id: string;
   name: string;
-  formationYear: number;
+  formationYear: number | null;
   lastShow: Date;
 
   @IsOptional()

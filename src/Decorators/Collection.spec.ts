@@ -22,7 +22,7 @@ describe('CollectionDecorator', () => {
     expect(setCollection).toHaveBeenCalledWith({
       name: 'foo',
       entityConstructor: Entity,
-      parentProps: null
+      parentProps: null,
     });
   });
 
@@ -35,7 +35,7 @@ describe('CollectionDecorator', () => {
     expect(setCollection).toHaveBeenCalledWith({
       name: 'Entities',
       entityConstructor: Entity,
-      parentProps: null
+      parentProps: null,
     });
   });
 });

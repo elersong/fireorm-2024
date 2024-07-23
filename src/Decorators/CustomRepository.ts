@@ -15,7 +15,10 @@ import { IEntityConstructor } from '../types';
  * @param {string} collectionName - The name of the collection this repository is associated with.
  * @returns {Function} - A decorator function that takes the repository class and registers it.
  */
-export function CustomRepository<T extends IEntity = IEntity>(entity: Constructor<T>, collectionName: string): Function {
+export function CustomRepository<T extends IEntity = IEntity>(
+  entity: Constructor<T>,
+  collectionName: string
+) {
   return function <U extends Constructor<any>>(
     target: U & { new (pathOrConstructor: string | IEntityConstructor, colName: string): any },
     _?: any
@@ -27,7 +30,7 @@ export function CustomRepository<T extends IEntity = IEntity>(entity: Constructo
     getMetadataStorage().setRepository({
       entity,
       target,
-      collectionName
+      collectionName,
     });
   };
 }

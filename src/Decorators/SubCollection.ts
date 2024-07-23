@@ -9,7 +9,7 @@ import { IEntityConstructor } from '../types';
  * @returns {Function} - A decorator function that registers the subcollection metadata.
  */
 export function SubCollection(entityConstructor: IEntityConstructor) {
-  return function (target: Object, propertyKey: string | symbol) {
+  return function (target: any, propertyKey: string | symbol) {
     entityConstructor.prototype.collectionName = propertyKey;
 
     if (isConstructor(target.constructor)) {

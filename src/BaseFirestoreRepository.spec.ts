@@ -37,13 +37,13 @@ describe('BaseFirestoreRepository', () => {
   describe('constructor', () => {
     // TODO: test with a different path
     it('should correctly initialize a repository with custom path', async () => {
-      const bandRepositoryWithPath = new BandRepository(Band,'bands');
+      const bandRepositoryWithPath = new BandRepository(Band, 'bands');
       const band = await bandRepositoryWithPath.findById('porcupine-tree');
       expect(band?.name).toEqual('Porcupine Tree');
     });
 
     it('should throw error if initialized with an invalid path', async () => {
-      expect(() => new BandRepository(Band,'invalidpath')).toThrowError(
+      expect(() => new BandRepository(Band, 'invalidpath')).toThrowError(
         new NoMetadataError('invalidpath')
       );
     });
@@ -155,14 +155,18 @@ describe('BaseFirestoreRepository', () => {
       const pt = await bandRepository.findById('porcupine-tree');
       const albumsSubColl = pt?.albums;
       const discographyNewestFirst = await albumsSubColl?.orderByDescending('releaseDate').find();
-      if (!discographyNewestFirst) {throw new Error('Band not found')}
+      if (!discographyNewestFirst) {
+        throw new Error('Band not found');
+      }
       expect(discographyNewestFirst[0].id).toEqual('fear-blank-planet');
     });
 
     it('must be chainable with where* filters', async () => {
       const pt = await bandRepository.findById('porcupine-tree');
       const albumsSubColl = pt?.albums;
-      if (!albumsSubColl) {throw new Error('Band not found')}
+      if (!albumsSubColl) {
+        throw new Error('Band not found');
+      }
       const discographyNewestFirst = await albumsSubColl
         .whereGreaterOrEqualThan('releaseDate', new Date('2001-01-01'))
         .orderByDescending('releaseDate')
@@ -220,7 +224,9 @@ describe('BaseFirestoreRepository', () => {
   describe('findById', () => {
     it('must find by id', async () => {
       const pt = await bandRepository.findById('porcupine-tree');
-      if (!pt) {throw new Error('Band not found')}
+      if (!pt) {
+        throw new Error('Band not found');
+      }
       expect(pt).toBeInstanceOf(Band);
       expect(pt.id).toEqual('porcupine-tree');
       expect(pt.name).toEqual('Porcupine Tree');
@@ -388,7 +394,9 @@ describe('BaseFirestoreRepository', () => {
   describe('update', () => {
     it('must update and return updated item', async () => {
       const band = await bandRepository.findById('porcupine-tree');
-      if (!band) {throw new Error('Band not found')}
+      if (!band) {
+        throw new Error('Band not found');
+      }
       const albums = band?.albums;
       band.name = 'Steven Wilson';
       const updatedBand = await bandRepository.update(band);
@@ -404,7 +412,9 @@ describe('BaseFirestoreRepository', () => {
       bandRepository = new BandRepository(Band, 'bands');
 
       const band = await bandRepository.findById('porcupine-tree');
-      if (!band) {throw new Error('Band not found')}
+      if (!band) {
+        throw new Error('Band not found');
+      }
       band.contactEmail = 'Not an email';
 
       await bandRepository.update(band);
@@ -417,7 +427,9 @@ describe('BaseFirestoreRepository', () => {
       initialize(firestore, { validateModels: true });
 
       const band = await bandRepository.findById('porcupine-tree');
-      if (!band) {throw new Error('Band not found')}
+      if (!band) {
+        throw new Error('Band not found');
+      }
       band.contactEmail = 'Not an email';
 
       try {
@@ -431,7 +443,9 @@ describe('BaseFirestoreRepository', () => {
       initialize(firestore, { validateModels: true });
 
       const band = await bandRepository.findById('porcupine-tree');
-      if (!band) {throw new Error('Band not found')}
+      if (!band) {
+        throw new Error('Band not found');
+      }
       band.contactEmail = 'Not an Email';
 
       try {
@@ -591,7 +605,9 @@ describe('BaseFirestoreRepository', () => {
       const docRef = firestore.collection('bands').doc('steven-wilson');
 
       const band = await bandRepository.findById('porcupine-tree');
-      if (!band) {throw new Error('Band not found')}
+      if (!band) {
+        throw new Error('Band not found');
+      }
       band.relatedBand = docRef;
       await bandRepository.update(band);
 
@@ -629,7 +645,9 @@ describe('BaseFirestoreRepository', () => {
     it('should correctly parse dates', async () => {
       const pt = await bandRepository.findById('porcupine-tree');
       const dw = await pt?.albums?.findById('deadwing');
-      if (!dw || !pt) {throw new Error('Band not found')}
+      if (!dw || !pt) {
+        throw new Error('Band not found');
+      }
       expect(pt.lastShow).toBeInstanceOf(Date);
       expect(pt.lastShow.toISOString()).toEqual('2010-10-14T00:00:00.000Z');
       expect(dw.releaseDate).toBeInstanceOf(Date);
@@ -638,7 +656,9 @@ describe('BaseFirestoreRepository', () => {
 
     it('should correctly parse geopoints', async () => {
       const pt = await bandRepository.findById('porcupine-tree');
-      if (!pt) {throw new Error('Band not found')}
+      if (!pt) {
+        throw new Error('Band not found');
+      }
       expect(pt.lastShowCoordinates).toBeInstanceOf(Coordinates);
       expect(pt.lastShowCoordinates.latitude).toEqual(51.5009088);
       expect(pt.lastShowCoordinates.longitude).toEqual(-0.1795547);
@@ -648,12 +668,16 @@ describe('BaseFirestoreRepository', () => {
       const docRef = firestore.collection('bands').doc('opeth');
 
       const band = await bandRepository.findById('porcupine-tree');
-      if (!band) {throw new Error('Band not found')}
+      if (!band) {
+        throw new Error('Band not found');
+      }
       band.relatedBand = docRef;
       await bandRepository.update(band);
 
       const foundBand = await bandRepository.findById('porcupine-tree');
-      if (!foundBand) {throw new Error('Band not found')}
+      if (!foundBand) {
+        throw new Error('Band not found');
+      }
 
       expect(foundBand.relatedBand).toBeInstanceOf(FirestoreDocumentReference);
       expect(foundBand.relatedBand?.id).toEqual('opeth');
@@ -665,7 +689,6 @@ describe('BaseFirestoreRepository', () => {
       const entity = new Band();
       entity.id = 'rush';
       entity.name = 'Rush';
-      // @ts-ignore
       entity.formationYear = null;
       entity.genres = ['progressive-rock', 'hard-rock', 'heavy-metal'];
 
@@ -683,7 +706,9 @@ describe('BaseFirestoreRepository', () => {
     it('should be able to open transactions', async () => {
       await bandRepository.runTransaction(async tran => {
         const band = await tran.findById('porcupine-tree');
-        if (!band) {throw new Error('Band not found')}
+        if (!band) {
+          throw new Error('Band not found');
+        }
         band.name = 'Árbol de Puercoespín';
         await tran.update(band);
       });
@@ -732,14 +757,16 @@ describe('BaseFirestoreRepository', () => {
   describe('must handle subcollections', () => {
     it('should initialize nested subcollections', async () => {
       const pt = await bandRepository.findById('red-hot-chili-peppers');
-      if (!pt) {throw new Error('Band not found')}
+      if (!pt) {
+        throw new Error('Band not found');
+      }
       expect(pt.name).toEqual('Red Hot Chili Peppers');
       expect(pt?.albums).toBeInstanceOf(BaseFirestoreRepository);
 
-      let mds = getMetadataStorage()
-
       const album = await pt?.albums?.findById('stadium-arcadium');
-      if (!album) {throw new Error('Album not found')}
+      if (!album) {
+        throw new Error('Album not found');
+      }
       expect(album.name).toEqual('Stadium Arcadium');
       expect(album.images).toBeInstanceOf(BaseFirestoreRepository);
     });
@@ -768,7 +795,9 @@ describe('BaseFirestoreRepository', () => {
       thirdAlbum.name = 'This Is War';
       thirdAlbum.releaseDate = new Date('2009-12-08');
 
-      if (!band.albums) {throw new Error('Albums not found')}
+      if (!band.albums) {
+        throw new Error('Albums not found');
+      }
       await band.albums.create(firstAlbum);
       await band.albums.create(secondAlbum);
       await band.albums.create(thirdAlbum);
@@ -822,7 +851,9 @@ describe('BaseFirestoreRepository', () => {
     it('should be able to update subcollections', async () => {
       const pt = await bandRepository.findById('porcupine-tree');
       const album = await pt?.albums?.findById('fear-blank-planet');
-      if (!album) {throw new Error('Band not found')}
+      if (!album) {
+        throw new Error('Band not found');
+      }
       album.comment = 'Anesthethize is top 3 IMHO';
 
       await pt?.albums?.update(album);
@@ -836,7 +867,9 @@ describe('BaseFirestoreRepository', () => {
 
       const pt = await bandRepository.findById('porcupine-tree');
       const album = await pt?.albums?.findById('fear-blank-planet');
-      if (!album) {throw new Error('Band not found')}
+      if (!album) {
+        throw new Error('Band not found');
+      }
 
       album.name = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.';
 
@@ -849,7 +882,9 @@ describe('BaseFirestoreRepository', () => {
 
     it('should be able to update collections with subcollections', async () => {
       const pt = await bandRepository.findById('porcupine-tree');
-      if (!pt) {throw new Error('Band not found')}
+      if (!pt) {
+        throw new Error('Band not found');
+      }
       pt.name = 'Porcupine Tree IS THE BEST';
       const updatedPt = await bandRepository.update(pt);
       const foundUpdatedPt = await bandRepository.update(pt);
@@ -879,7 +914,9 @@ describe('BaseFirestoreRepository', () => {
       firstAlbum.id = '30-seconds-to-mars';
       firstAlbum.name = '30 Seconds to Mars (Album)';
       firstAlbum.releaseDate = new Date('2002-07-22');
-      if (!band.albums) {throw new Error('Band not found')}
+      if (!band.albums) {
+        throw new Error('Band not found');
+      }
 
       const album = await band.albums.create(firstAlbum);
 
@@ -898,17 +935,23 @@ describe('BaseFirestoreRepository', () => {
       expect(images?.length).toEqual(2);
 
       const foundBand = await bandRepository.findById('30-seconds-to-mars');
-      if (!foundBand) {throw new Error('Band not found')}
+      if (!foundBand) {
+        throw new Error('Band not found');
+      }
       expect(foundBand.name).toEqual('30 Seconds To Mars');
 
       const foundAlbums = await foundBand.albums?.find();
-      if (!foundAlbums) {throw new Error('Band not found')}
+      if (!foundAlbums) {
+        throw new Error('Band not found');
+      }
 
       expect(foundAlbums.length).toEqual(1);
       expect(foundAlbums[0].name).toEqual('30 Seconds to Mars (Album)');
 
       const foundImages = await foundAlbums[0].images?.find();
-      if (!foundImages) {throw new Error('Band not found')}
+      if (!foundImages) {
+        throw new Error('Band not found');
+      }
       expect(foundImages.length).toEqual(2);
       expect(foundImages[0].id).toEqual('image1');
     });
@@ -943,7 +986,9 @@ describe('BaseFirestoreRepository', () => {
     it('should correctly initialize a repository with an entity', async () => {
       const bandRepositoryWithPath = new BandRepository(Band, 'bands');
       const band = await bandRepositoryWithPath.findById('the-speckled-band');
-      if (!band) {throw new Error('Band not found')}
+      if (!band) {
+        throw new Error('Band not found');
+      }
       expect(band.name).toEqual('the Speckled Band');
       expect(band.agents[0]).toBeInstanceOf(Agent);
       expect(band.agents[0].name).toEqual('Mycroft Holmes');

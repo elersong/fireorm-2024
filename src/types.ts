@@ -218,4 +218,4 @@ export type ParentProperties<T extends IEntity = IEntity> = {
   parentEntityConstructor: IEntityConstructor<T>;
   parentPropertyKey: string;
   parentCollectionName: string;
-}
+};

@@ -82,7 +82,7 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
         obj[key] = { id, path };
       } else if (isObject(val)) {
         this.transformFirestoreTypes(val);
-      } 
+      }
     });
     return obj;
   };
@@ -103,7 +103,9 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
       const parentPropertyKey = subCol.parentProps?.parentPropertyKey;
 
       if (!parentPropertyKey) {
-        throw new Error(`Parent property key not found in registered subcollection of entity (${entity.constructor.name})`);
+        throw new Error(
+          `Parent property key not found in registered subcollection of entity (${entity.constructor.name})`
+        );
       }
 
       // If we are inside a transaction, our subcollections should also be TransactionRepositories
@@ -161,7 +163,7 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
     tran?: Transaction,
     tranRefStorage?: ITransactionReferenceStorage
   ): T => {
-    const transformedData = this.transformFirestoreTypes(doc.data() || {})
+    const transformedData = this.transformFirestoreTypes(doc.data() || {});
     const entity = plainToClass(this.colMetadata.entityConstructor, {
       id: doc.id,
       ...transformedData,

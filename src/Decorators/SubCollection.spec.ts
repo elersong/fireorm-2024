@@ -34,9 +34,8 @@ describe('SubCollectionDecorator', () => {
       parentProps: {
         parentEntityConstructor: Entity,
         parentPropertyKey: 'subentity',
-        parentCollectionName: 'Entities'
-      }
+        parentCollectionName: 'Entities',
+      },
     });
   });
- 
 });
