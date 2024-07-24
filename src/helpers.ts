@@ -8,9 +8,7 @@ import {
 } from './types';
 import { FirestoreTransaction } from './Transaction/FirestoreTransaction';
 import { FirestoreBatch } from './Batch/FirestoreBatch';
-import { BaseRepository } from './BaseRepository';
-import { AbstractFirestoreRepository } from './AbstractFirestoreRepository';
-import { MetadataStorage } from './MetadataStorage';
+import { InvalidCollectionOrPathError, InvalidInputError, NoCollectionNameError, NoCustomRepositoryError, NoFirestoreError, NoParentCollectionError } from './Errors';
 
 type RepositoryType = 'default' | 'base' | 'custom' | 'transaction';
 
@@ -25,7 +23,7 @@ function _getRepository<
 ): R {
   const metadataStorage = getMetadataStorage();
   if (!metadataStorage.firestoreRef) {
-    throw new Error('Firestore must be initialized first');
+    throw new NoFirestoreError("_getRepository");
   }
 
   const isPath = typeof entityConstructorOrPath === 'string';
@@ -35,16 +33,13 @@ function _getRepository<
   } else if (providedCollectionName) {
     collectionName = providedCollectionName;
   } else {
-    throw new Error('Collection name is required when using an entity constructor');
+    throw new NoCollectionNameError();
   }
 
   const collection = metadataStorage.getCollection(entityConstructorOrPath, collectionName);
 
   if (!collection) {
-    const error = isPath
-      ? `'${collectionName}' is not a valid path for a collection`
-      : `'${collectionName}' is not a valid collection`;
-    throw new Error(error);
+    throw new InvalidCollectionOrPathError(collectionName, isPath);
   }
 
   const repository = metadataStorage.getRepository(collection.entityConstructor, collectionName);
@@ -52,7 +47,7 @@ function _getRepository<
   const useCustomRepository = repositoryType === 'custom' || (!repositoryType && repository);
 
   if (useCustomRepository && !repository) {
-    throw new Error(`'${collectionName}' does not have a custom repository.`);
+    throw new NoCustomRepositoryError(collectionName);
   }
 
   // Get the parent collection if it exists
@@ -63,7 +58,7 @@ function _getRepository<
       parentCollectionName
     );
     if (!parentCollection) {
-      throw new Error(`'${collectionName}' does not have a valid parent collection.`);
+      throw new NoParentCollectionError(collectionName);
     }
   }
 
@@ -102,7 +97,7 @@ export function getCustomRepository<T extends IEntity>(
 ) {
   // TODO: Add tests for calling this with both an entity and a path
   if (!collectionName) {
-    throw new Error('Collection name is required when using an entity constructor.');
+    throw new NoCollectionNameError();
   }
   return _getRepository(entityOrPath, collectionName, 'custom');
 }
@@ -117,7 +112,7 @@ export function getBaseRepository<T extends IEntity>(
 ) {
   // TODO: Add tests for calling this with both an entity and a path
   if (!collectionName) {
-    throw new Error('Collection name is required when using an entity constructor.');
+    throw new NoCollectionNameError();
   }
   return _getRepository(entityOrPath, collectionName, 'base');
 }
@@ -130,7 +125,7 @@ export const runTransaction = async <T>(executor: (tran: FirestoreTransaction) =
   const metadataStorage = getMetadataStorage();
 
   if (!metadataStorage.firestoreRef) {
-    throw new Error('Firestore must be initialized first');
+    throw new NoFirestoreError("runTransaction");
   }
 
   return metadataStorage.firestoreRef.runTransaction(async t => {
@@ -156,28 +151,28 @@ export const createBatch = () => {
   const metadataStorage = getMetadataStorage();
 
   if (!metadataStorage.firestoreRef) {
-    throw new Error('Firestore must be initialized first');
+    throw new NoFirestoreError("createBatch");
   }
 
   return new FirestoreBatch(metadataStorage.firestoreRef);
 };
 
-function getLastSegment(path: string): string {
+export function getLastSegment(path: string): string {
   if (!path || typeof path !== 'string') {
-    throw new Error('Invalid input: Path must be a non-empty string');
+    throw new InvalidInputError('Path must be a non-empty string');
   }
 
   const segments = path.split('/');
   const segmentCount = segments.length;
 
   if (segmentCount === 0 || segmentCount % 2 === 0) {
-    throw new Error('Invalid input: Path must have an odd number of segments greater than 0');
+    throw new InvalidInputError('Path must have an odd number of segments greater than 0');
   }
 
   const lastSegment = segments.pop();
 
   if (!lastSegment) {
-    throw new Error('Invalid input: Path segments cannot be empty');
+    throw new InvalidInputError('Path segments cannot be empty strings');
   }
 
   return lastSegment;

@@ -30,6 +30,16 @@ export class IncompleteOrInvalidPathError extends Error {
   }
 }
 
+export class InvalidCollectionOrPathError extends Error {
+  constructor(collectionName: string, isPath: boolean) {
+    if (isPath) {
+      super(`'${collectionName}' is not a valid path for a collection`);
+    } else {
+      throw new IncompleteOrInvalidPathError(collectionName);
+    }
+  }
+}
+
 export class CollectionPathNotFoundError extends Error {
   constructor(path: string) {
     super(`Collection path not found: ${path}`);
@@ -61,5 +71,37 @@ export class CustomRepositoryInheritanceError extends Error {
     super(
       'Cannot register a custom repository on a class that does not inherit from BaseFirestoreRepository'
     );
+  }
+}
+
+export class NoFirestoreError extends Error {
+  constructor(methodName: string) {
+    super(
+      `Firestore must be initialized before calling this method (${methodName}). Did you forget to call 'initializeFirestore'?`
+    );
+  }
+}
+
+export class NoCollectionNameError extends Error {
+  constructor() {
+    super('Collection name was not provided, but is required when using an entity constructor rather than a collection path.');
+  }
+}
+
+export class NoCustomRepositoryError extends Error {
+  constructor(collectionName: string) {
+    super(`'${collectionName}' does not have a custom repository.`);
+  }
+}
+
+export class NoParentCollectionError extends Error {
+  constructor(collectionName: string) {
+    super(`'${collectionName}' does not have a valid parent collection.`);
+  }
+}
+
+export class InvalidInputError extends Error {
+  constructor(message: string) {
+    super(`Invalid Input: ${message}`);
   }
 }
