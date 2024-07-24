@@ -1,5 +1,5 @@
 import { ignoreKey, serializeKey } from './Decorators';
-import { CollectionMetadataWithSegments, FullCollectionMetadata } from './MetadataStorage';
+import { CollectionMetadataWithSegments} from './MetadataStorage';
 import { IEntity, FirestoreSerializable } from '.';
 
 /**
@@ -52,8 +52,10 @@ export function serializeEntity<T extends IEntity>(
   // Merge original properties and getters
   const combinedObj = { ...obj, ...objectGetters };
 
-  // Remove sub-collection metadata properties
+  // Remove properties linking to a subcollection
   subColMetadata.forEach(scm => {
+    // top level collections shouldn't be in MetadataStorage.subCollections
+    // so this shouldn't be necessary, but it's here just in case
     if (scm.parentProps === null) {
       return;
     }
