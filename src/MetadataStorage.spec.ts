@@ -6,10 +6,7 @@ import {
 } from './MetadataStorage';
 import { BaseFirestoreRepository } from './BaseFirestoreRepository';
 import { IRepository, Constructor } from './types';
-import {
-  CollectionPathNotFoundError,
-  InvalidRepositoryIndexError,
-} from './Errors';
+import { CollectionPathNotFoundError, InvalidRepositoryIndexError } from './Errors';
 
 describe('MetadataStorage', () => {
   let metadataStorage: MetadataStorage;

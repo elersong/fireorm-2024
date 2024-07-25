@@ -1,7 +1,4 @@
-import {
-  CollectionReference,
-  Transaction,
-} from '@google-cloud/firestore';
+import { CollectionReference, Transaction } from '@google-cloud/firestore';
 import { getMetadataStorage } from './MetadataUtils';
 import { FullCollectionMetadata, MetadataStorageConfig } from './MetadataStorage';
 import { NoFirestoreError, NoMetadataError, NoParentPropertyKeyError } from './Errors';
@@ -72,6 +69,7 @@ describe('AbstractFirestoreRepository', () => {
 
     getRepositoryMock = jest.fn();
 
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const helpers = require('./helpers');
     helpers.getRepository = getRepositoryMock;
     getRepositoryMock.mockReturnValue({ someMethod: jest.fn() });
@@ -80,9 +78,11 @@ describe('AbstractFirestoreRepository', () => {
       getRepository: jest.fn().mockReturnValue({ someMethod: jest.fn() }),
     } as unknown as jest.Mocked<FirestoreTransaction>;
 
-    (
-      require('./Transaction/FirestoreTransaction').FirestoreTransaction as jest.Mock
-    ).mockImplementation(() => firestoreTransactionMock);
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const FirestoreTransaction = require('./Transaction/FirestoreTransaction');
+    (FirestoreTransaction.FirestoreTransaction as jest.Mock).mockImplementation(
+      () => firestoreTransactionMock
+    );
   });
 
   afterEach(() => {

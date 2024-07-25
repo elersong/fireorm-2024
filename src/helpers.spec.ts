@@ -27,7 +27,11 @@ describe('Error state', () => {
   });
 
   it('runTransaction: should throw error if firebase is not initialized', async () => {
-    expect(runTransaction(async () => {})).rejects.toThrow(NoFirestoreError);
+    expect(
+      runTransaction(async () => {
+        const thing = 'value';
+      })
+    ).rejects.toThrow(NoFirestoreError);
   });
 
   it('createBatch: should throw error if firebase is not initialized', () => {
