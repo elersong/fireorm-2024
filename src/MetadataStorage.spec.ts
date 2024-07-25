@@ -8,45 +8,154 @@ import { BaseFirestoreRepository } from './BaseFirestoreRepository';
 import { IRepository, Constructor } from './types';
 import { CollectionPathNotFoundError, InvalidRepositoryIndexError } from './Errors';
 
-describe('MetadataStorage', () => {
+class Entity {
+  id: string;
+}
+
+class SubEntity {
+  id: string;
+}
+
+class SubSubEntity {
+  public id: string;
+}
+
+const col: EnforcedCollectionMetadata = {
+  entityConstructor: Entity,
+  name: 'entity',
+  parentProps: null,
+};
+
+const subCol: EnforcedCollectionMetadata = {
+  entityConstructor: SubEntity,
+  name: 'subEntity',
+  parentProps: {
+    parentEntityConstructor: Entity,
+    parentPropertyKey: 'subEntities',
+    parentCollectionName: 'entity',
+  },
+};
+
+const subSubCol: EnforcedCollectionMetadata = {
+  entityConstructor: SubSubEntity,
+  name: 'subSubEntity',
+  parentProps: {
+    parentEntityConstructor: SubEntity,
+    parentPropertyKey: 'subSubEntities',
+    parentCollectionName: 'subEntity',
+  },
+};
+
+describe('MetadataStorage: Private Methods', () => {
+  describe('isSubCollectionMetadata', () => {
+    it('should return true for correctly configured subcollection metadata', () => {
+      class TestClass {
+        id: string;
+        value: string;
+        constructor(value: string) {
+          this.value = value;
+        }
+      }
+      class TestClass2 {
+        id: string;
+        value: string;
+        constructor(value: string) {
+          this.value = value;
+        }
+      }
+
+      const classInstance = new MetadataStorage();
+      const subCollectioMetadata = {
+        entityConstructor: TestClass,
+        name: 'test',
+        parentProps: {
+          parentCollectionName: 'test2',
+          parentEntityConstructor: TestClass2,
+          parentPropertyKey: 'test',
+        },
+      } as EnforcedCollectionMetadata<TestClass>;
+
+      const result = (classInstance as any)['isSubCollectionMetadata'](subCollectioMetadata);
+      expect(result).toEqual(true);
+    });
+
+    it('should return false for collection metadata or any incorrect type', () => {
+      class TestClass {
+        id: string;
+        value: string;
+        constructor(value: string) {
+          this.value = value;
+        }
+      }
+
+      const classInstance = new MetadataStorage();
+      const subCollectioMetadata = {
+        entityConstructor: TestClass,
+        name: 'test',
+        parentProps: null,
+      } as EnforcedCollectionMetadata<TestClass>;
+
+      const result = (classInstance as any)['isSubCollectionMetadata'](subCollectioMetadata);
+      expect(result).toEqual(false);
+      const result2 = (classInstance as any)['isSubCollectionMetadata']({});
+      expect(result2).toEqual(false);
+    });
+  });
+
+  describe('isSameCollection', () => {
+    it('should return true when inputs are equivalent values', () => {
+      class TestClass {
+        id: string;
+        value: string;
+        constructor(value: string) {
+          this.value = value;
+        }
+      }
+
+      const classInstance = new MetadataStorage();
+      const subCollectioMetadata = {
+        entityConstructor: TestClass,
+        name: 'test',
+        parentProps: null,
+      } as EnforcedCollectionMetadata<TestClass>;
+      const sameCollectionMetadata = subCollectioMetadata;
+
+      const result = (classInstance as any)['isSameCollection'](
+        subCollectioMetadata,
+        sameCollectionMetadata
+      );
+      expect(result).toEqual(true);
+    });
+
+    it('should return false for the incorrect input type', () => {
+      class TestClass {
+        id: string;
+        value: string;
+        constructor(value: string) {
+          this.value = value;
+        }
+      }
+
+      const classInstance = new MetadataStorage();
+      const subCollectioMetadata = {
+        entityConstructor: TestClass,
+        name: 'test',
+        parentProps: null,
+      } as EnforcedCollectionMetadata<TestClass>;
+      const sameCollectionMetadata = { ...subCollectioMetadata };
+      sameCollectionMetadata.name = 'test2';
+
+      const result = (classInstance as any)['isSameCollection'](
+        subCollectioMetadata,
+        sameCollectionMetadata
+      );
+      expect(result).toEqual(false);
+    });
+  });
+});
+
+describe('MetadataStorage: Public Methods', () => {
   let metadataStorage: MetadataStorage;
-  class Entity {
-    id: string;
-  }
-
-  class SubEntity {
-    id: string;
-  }
-
-  class SubSubEntity {
-    public id: string;
-  }
-
-  const col: EnforcedCollectionMetadata = {
-    entityConstructor: Entity,
-    name: 'entity',
-    parentProps: null,
-  };
-
-  const subCol: EnforcedCollectionMetadata = {
-    entityConstructor: SubEntity,
-    name: 'subEntity',
-    parentProps: {
-      parentEntityConstructor: Entity,
-      parentPropertyKey: 'subEntities',
-      parentCollectionName: 'entity',
-    },
-  };
-
-  const subSubCol: EnforcedCollectionMetadata = {
-    entityConstructor: SubSubEntity,
-    name: 'subSubEntity',
-    parentProps: {
-      parentEntityConstructor: SubEntity,
-      parentPropertyKey: 'subSubEntities',
-      parentCollectionName: 'subEntity',
-    },
-  };
 
   beforeEach(() => {
     metadataStorage = new MetadataStorage();
@@ -270,114 +379,6 @@ describe('MetadataStorage', () => {
     it('should not throw error when repository index is valid', () => {
       expect(() => validateRepositoryIndex(['string', null])).not.toThrow();
       expect(() => validateRepositoryIndex(['string', 'string'])).not.toThrow();
-    });
-  });
-
-  describe('private methods', () => {
-    describe('isSubCollectionMetadata', () => {
-      it('should return true for correctly configured subcollection metadata', () => {
-        class TestClass {
-          id: string;
-          value: string;
-          constructor(value: string) {
-            this.value = value;
-          }
-        }
-        class TestClass2 {
-          id: string;
-          value: string;
-          constructor(value: string) {
-            this.value = value;
-          }
-        }
-
-        const classInstance = new MetadataStorage();
-        const subCollectioMetadata = {
-          entityConstructor: TestClass,
-          name: 'test',
-          parentProps: {
-            parentCollectionName: 'test2',
-            parentEntityConstructor: TestClass2,
-            parentPropertyKey: 'test',
-          },
-        } as EnforcedCollectionMetadata<TestClass>;
-
-        const result = (classInstance as any)['isSubCollectionMetadata'](subCollectioMetadata);
-        expect(result).toEqual(true);
-      });
-
-      it('should return false for collection metadata or any incorrect type', () => {
-        class TestClass {
-          id: string;
-          value: string;
-          constructor(value: string) {
-            this.value = value;
-          }
-        }
-
-        const classInstance = new MetadataStorage();
-        const subCollectioMetadata = {
-          entityConstructor: TestClass,
-          name: 'test',
-          parentProps: null,
-        } as EnforcedCollectionMetadata<TestClass>;
-
-        const result = (classInstance as any)['isSubCollectionMetadata'](subCollectioMetadata);
-        expect(result).toEqual(false);
-        const result2 = (classInstance as any)['isSubCollectionMetadata']({});
-        expect(result2).toEqual(false);
-      });
-    });
-
-    describe('isSameCollection', () => {
-      it('should return true when inputs are equivalent values', () => {
-        class TestClass {
-          id: string;
-          value: string;
-          constructor(value: string) {
-            this.value = value;
-          }
-        }
-
-        const classInstance = new MetadataStorage();
-        const subCollectioMetadata = {
-          entityConstructor: TestClass,
-          name: 'test',
-          parentProps: null,
-        } as EnforcedCollectionMetadata<TestClass>;
-        const sameCollectionMetadata = subCollectioMetadata;
-
-        const result = (classInstance as any)['isSameCollection'](
-          subCollectioMetadata,
-          sameCollectionMetadata
-        );
-        expect(result).toEqual(true);
-      });
-
-      it('should return false for the incorrect input type', () => {
-        class TestClass {
-          id: string;
-          value: string;
-          constructor(value: string) {
-            this.value = value;
-          }
-        }
-
-        const classInstance = new MetadataStorage();
-        const subCollectioMetadata = {
-          entityConstructor: TestClass,
-          name: 'test',
-          parentProps: null,
-        } as EnforcedCollectionMetadata<TestClass>;
-        const sameCollectionMetadata = { ...subCollectioMetadata };
-        sameCollectionMetadata.name = 'test2';
-
-        const result = (classInstance as any)['isSameCollection'](
-          subCollectioMetadata,
-          sameCollectionMetadata
-        );
-        expect(result).toEqual(false);
-      });
     });
   });
 });

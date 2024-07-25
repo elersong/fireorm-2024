@@ -29,7 +29,7 @@ describe('Error state', () => {
   it('runTransaction: should throw error if firebase is not initialized', async () => {
     expect(
       runTransaction(async () => {
-        const thing = 'value';
+        console.log('Useless operation so the function is not empty');
       })
     ).rejects.toThrow(NoFirestoreError);
   });

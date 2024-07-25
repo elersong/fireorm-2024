@@ -168,7 +168,7 @@ export class MetadataStorage {
       this.isSameCollection(registeredCollection, col)
     );
 
-    if (existing && this.config.throwOnDuplicatedCollection == true) {
+    if (existing && this.config.throwOnDuplicatedCollection) {
       if (colIsSubCollection) {
         throw new DuplicateSubCollectionError(
           existing.entityConstructor.name,
@@ -222,7 +222,7 @@ export class MetadataStorage {
   };
 
   public getRepository = (entityConstructor: IEntityConstructor, collectionName?: string) => {
-    const repo_index = [entityConstructor.name, collectionName ? collectionName : null];
+    const repo_index = [entityConstructor.name, collectionName || null];
     validateRepositoryIndex(repo_index);
     return this.repositories.get(JSON.stringify(repo_index)) || null;
   };
