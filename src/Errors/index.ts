@@ -84,7 +84,9 @@ export class NoFirestoreError extends Error {
 
 export class NoCollectionNameError extends Error {
   constructor() {
-    super('Collection name was not provided, but is required when using an entity constructor rather than a collection path.');
+    super(
+      'Collection name was not provided, but is required when using an entity constructor rather than a collection path.'
+    );
   }
 }
 
@@ -102,7 +104,9 @@ export class NoParentCollectionError extends Error {
 
 export class NoParentPropertyKeyError extends Error {
   constructor(entity: IEntity) {
-    super(`Parent property key not found in registered subcollection of entity (${entity.constructor.name})`);
+    super(
+      `Parent property key not found in registered subcollection of entity (${entity.constructor.name})`
+    );
   }
 }
 

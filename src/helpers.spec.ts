@@ -172,8 +172,7 @@ describe('Helpers', () => {
     });
 
     it('should throw if the path is incomplete', () => {
-      expect(() => getLastSegment('users/user-id/messages/message-id'))
-        .toThrow(InvalidInputError);
+      expect(() => getLastSegment('users/user-id/messages/message-id')).toThrow(InvalidInputError);
     });
 
     it('should throw if the path is empty', () => {
@@ -181,8 +180,7 @@ describe('Helpers', () => {
     });
 
     it('should throw if the last segment is empty', () => {
-      expect(() => getLastSegment('users/user-id/messages/message-id/'))
-        .toThrow(InvalidInputError);
+      expect(() => getLastSegment('users/user-id/messages/message-id/')).toThrow(InvalidInputError);
     });
   });
 });

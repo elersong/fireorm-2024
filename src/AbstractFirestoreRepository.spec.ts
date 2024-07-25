@@ -1,4 +1,9 @@
-import { CollectionReference, DocumentSnapshot, QuerySnapshot, Transaction } from '@google-cloud/firestore';
+import {
+  CollectionReference,
+  DocumentSnapshot,
+  QuerySnapshot,
+  Transaction,
+} from '@google-cloud/firestore';
 import { getMetadataStorage } from './MetadataUtils';
 import { FullCollectionMetadata, MetadataStorageConfig } from './MetadataStorage';
 import { NoFirestoreError, NoMetadataError, NoParentPropertyKeyError } from './Errors';
@@ -74,12 +79,14 @@ describe('AbstractFirestoreRepository', () => {
     const helpers = require('./helpers');
     helpers.getRepository = getRepositoryMock;
     getRepositoryMock.mockReturnValue({ someMethod: jest.fn() });
-    
+
     firestoreTransactionMock = {
       getRepository: jest.fn().mockReturnValue({ someMethod: jest.fn() }),
     } as unknown as jest.Mocked<FirestoreTransaction>;
 
-    (require('./Transaction/FirestoreTransaction').FirestoreTransaction as jest.Mock).mockImplementation(() => firestoreTransactionMock);
+    (
+      require('./Transaction/FirestoreTransaction').FirestoreTransaction as jest.Mock
+    ).mockImplementation(() => firestoreTransactionMock);
   });
 
   afterEach(() => {
@@ -100,7 +107,11 @@ describe('AbstractFirestoreRepository', () => {
       return transformed as unknown as TransformedData;
     }
 
-    public initializeSubCollectionsPublic(entity: TestEntity, tran?: Transaction, tranRefStorage?: any) {
+    public initializeSubCollectionsPublic(
+      entity: TestEntity,
+      tran?: Transaction,
+      tranRefStorage?: any
+    ) {
       return this.initializeSubCollections(entity, tran, tranRefStorage);
     }
   }
@@ -112,29 +123,29 @@ describe('AbstractFirestoreRepository', () => {
         config: {} as MetadataStorageConfig,
         firestoreRef: undefined,
       });
-  
+
       expect(() => new TestRepository('path', 'TestEntity')).toThrow(NoFirestoreError);
     });
-  
+
     it('should throw NoMetadataError if no Metadata is not found for the specified collection', () => {
       getCollectionMock.mockReturnValueOnce(undefined);
-  
+
       expect(() => new TestRepository('path', 'TestEntity')).toThrow(NoMetadataError);
     });
-  
+
     it('should initialize class properties correctly', () => {
-      const colMetadataMock = { 
-        entityConstructor: TestEntity, 
-        name: 'TestEntity', 
+      const colMetadataMock = {
+        entityConstructor: TestEntity,
+        name: 'TestEntity',
         segments: ['TestEntity'],
         parentProps: null,
-        subCollections: [] 
+        subCollections: [],
       } as FullCollectionMetadata;
-      
+
       getCollectionMock.mockReturnValueOnce(colMetadataMock);
-  
+
       const repository = new TestRepository('path', 'TestEntity');
-  
+
       expect((repository as any).colMetadata).toBe(colMetadataMock);
       expect((repository as any).path).toBe('path');
       expect((repository as any).name).toBe('TestEntity');
@@ -151,11 +162,11 @@ describe('AbstractFirestoreRepository', () => {
         parentProps: null,
         subCollections: [],
       } as FullCollectionMetadata;
-    
+
       getCollectionMock.mockReturnValueOnce(colMetadataMock);
-    
+
       const repository = new TestRepository('path', 'TestEntity');
-    
+
       const firestoreData: FirestoreData = {
         timestampField: {
           toDate: () => new Date('2020-01-01T00:00:00Z'),
@@ -174,10 +185,10 @@ describe('AbstractFirestoreRepository', () => {
           },
         },
       };
-    
+
       // Explicitly cast the transformed data to the correct type
       const transformedData = repository.transformTypes(firestoreData);
-    
+
       expect(transformedData.timestampField).toEqual(new Date('2020-01-01T00:00:00Z'));
       expect(transformedData.geoPointField).toEqual({ latitude: 10, longitude: 20 });
       expect(transformedData.documentReferenceField).toEqual({ id: 'docId', path: 'path/to/doc' });
@@ -201,20 +212,20 @@ describe('AbstractFirestoreRepository', () => {
           },
         ],
       } as FullCollectionMetadata;
-  
+
       getCollectionMock.mockReturnValueOnce(colMetadataMock);
-  
+
       const repository = new TestRepository('path', 'TestEntity');
-  
+
       const entity = new TestEntity();
       entity.id = 'entityId';
-  
+
       repository.initializeSubCollectionsPublic(entity);
-  
+
       expect((entity as any).subCollectionRepository).toBeDefined();
       expect(getRepositoryMock).toHaveBeenCalledWith('path/entityId/subCollection');
     });
-  
+
     it('should throw NoParentPropertyKeyError if parentPropertyKey is not defined', () => {
       const colMetadataMock = {
         entityConstructor: TestEntity,
@@ -228,17 +239,19 @@ describe('AbstractFirestoreRepository', () => {
           },
         ],
       } as FullCollectionMetadata;
-  
+
       getCollectionMock.mockReturnValueOnce(colMetadataMock);
-  
+
       const repository = new TestRepository('path', 'TestEntity');
-  
+
       const entity = new TestEntity();
       entity.id = 'entityId';
-  
-      expect(() => repository.initializeSubCollectionsPublic(entity)).toThrow(NoParentPropertyKeyError);
+
+      expect(() => repository.initializeSubCollectionsPublic(entity)).toThrow(
+        NoParentPropertyKeyError
+      );
     });
-  
+
     it('should initialize subcollections correctly within a transaction', () => {
       const colMetadataMock = {
         entityConstructor: TestEntity,
@@ -254,20 +267,22 @@ describe('AbstractFirestoreRepository', () => {
           },
         ],
       } as FullCollectionMetadata;
-  
+
       getCollectionMock.mockReturnValueOnce(colMetadataMock);
-  
+
       const repository = new TestRepository('path', 'TestEntity');
-  
+
       const entity = new TestEntity();
       entity.id = 'entityId';
-  
+
       const tranRefStorageMock = { add: jest.fn() };
-  
+
       repository.initializeSubCollectionsPublic(entity, {} as Transaction, tranRefStorageMock);
-  
+
       expect((entity as any).subCollectionRepository).toBeDefined();
-      expect(firestoreTransactionMock.getRepository).toHaveBeenCalledWith('path/entityId/subCollection');
+      expect(firestoreTransactionMock.getRepository).toHaveBeenCalledWith(
+        'path/entityId/subCollection'
+      );
       expect(tranRefStorageMock.add).toHaveBeenCalledWith({
         parentPropertyKey: 'subCollectionRepository',
         path: 'path/entityId/subCollection',

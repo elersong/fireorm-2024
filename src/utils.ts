@@ -1,5 +1,5 @@
 import { ignoreKey, serializeKey } from './Decorators';
-import { CollectionMetadataWithSegments} from './MetadataStorage';
+import { CollectionMetadataWithSegments } from './MetadataStorage';
 import { IEntity, FirestoreSerializable } from '.';
 
 /**

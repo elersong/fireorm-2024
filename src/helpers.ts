@@ -8,7 +8,14 @@ import {
 } from './types';
 import { FirestoreTransaction } from './Transaction/FirestoreTransaction';
 import { FirestoreBatch } from './Batch/FirestoreBatch';
-import { InvalidCollectionOrPathError, InvalidInputError, NoCollectionNameError, NoCustomRepositoryError, NoFirestoreError, NoParentCollectionError } from './Errors';
+import {
+  InvalidCollectionOrPathError,
+  InvalidInputError,
+  NoCollectionNameError,
+  NoCustomRepositoryError,
+  NoFirestoreError,
+  NoParentCollectionError,
+} from './Errors';
 
 type RepositoryType = 'default' | 'base' | 'custom' | 'transaction';
 
@@ -23,7 +30,7 @@ function _getRepository<
 ): R {
   const metadataStorage = getMetadataStorage();
   if (!metadataStorage.firestoreRef) {
-    throw new NoFirestoreError("_getRepository");
+    throw new NoFirestoreError('_getRepository');
   }
 
   const isPath = typeof entityConstructorOrPath === 'string';
@@ -125,7 +132,7 @@ export const runTransaction = async <T>(executor: (tran: FirestoreTransaction) =
   const metadataStorage = getMetadataStorage();
 
   if (!metadataStorage.firestoreRef) {
-    throw new NoFirestoreError("runTransaction");
+    throw new NoFirestoreError('runTransaction');
   }
 
   return metadataStorage.firestoreRef.runTransaction(async t => {
@@ -151,7 +158,7 @@ export const createBatch = () => {
   const metadataStorage = getMetadataStorage();
 
   if (!metadataStorage.firestoreRef) {
-    throw new NoFirestoreError("createBatch");
+    throw new NoFirestoreError('createBatch');
   }
 
   return new FirestoreBatch(metadataStorage.firestoreRef);
