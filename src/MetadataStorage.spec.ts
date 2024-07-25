@@ -121,13 +121,6 @@ describe('MetadataStorage', () => {
       expect(entityMetadata).toEqual(null);
     });
 
-    // Potentially remove this test
-    it.skip('should throw an error when trying to get a collection with a top level path', () => {
-      expect(() => metadataStorage.getCollection('entity')).toThrow(
-        'Invalid collection path: entity. Top level paths are not allowed. Must be a path to a subcollection.'
-      );
-    });
-
     it('should initialize subcollection metadata', () => {
       const entityMetadata = metadataStorage.getCollection(Entity, 'entity');
 
@@ -230,7 +223,7 @@ describe('MetadataStorage', () => {
       expect(metadataStorage.getRepositories().get(repo_index)?.entity).toEqual(Entity);
     });
 
-    it.skip('should throw when trying to store two repositories with the same entity class', () => {
+    it('should handle when two identical repositories are set', () => {
       class EntityRepository2 extends BaseFirestoreRepository<Entity> {}
 
       const entityRepository2: RepositoryMetadata = {
@@ -240,9 +233,9 @@ describe('MetadataStorage', () => {
 
       metadataStorage.setRepository(entityRepository);
 
-      expect(() => metadataStorage.setRepository(entityRepository2)).toThrowError(
-        'Cannot register a custom repository twice with two different targets'
-      );
+      expect(() => metadataStorage.setRepository(entityRepository2)).not.toThrow();
+      const metadataStorageRepositories = metadataStorage.getRepositories();
+      expect(metadataStorageRepositories.size).toEqual(1);
     });
 
     it('should throw when trying to store repositories that dont inherit from BaseRepository', () => {

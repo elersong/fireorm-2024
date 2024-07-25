@@ -235,6 +235,11 @@ export class MetadataStorage {
     const repo_index = [repo.entity.name, repo.collectionName ? repo.collectionName : null];
     validateRepositoryIndex(repo_index);
 
+    if (this.repositories.has(JSON.stringify(repo_index))) {
+      // already exists with no changes
+      return;
+    }
+
     this.repositories.set(JSON.stringify(repo_index), repo);
   };
 

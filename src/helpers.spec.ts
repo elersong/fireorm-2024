@@ -155,7 +155,7 @@ describe('Helpers', () => {
   });
 
   describe('runTransaction', () => {
-    it.skip('should be able to get a transaction repository', async () => {
+    it('should be able to get a transaction repository', async () => {
       await runTransaction(async transaction => {
         expect(transaction).toBeInstanceOf(FirestoreTransaction);
       });
