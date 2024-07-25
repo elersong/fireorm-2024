@@ -1,5 +1,5 @@
 import { SubCollection } from './SubCollection';
-import { IEntity, ISubCollection } from '../types';
+import { ISubCollection } from '../types';
 import { Collection } from './Collection';
 
 const setCollection = jest.fn();

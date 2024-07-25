@@ -1,7 +1,5 @@
 import {
   CollectionReference,
-  DocumentSnapshot,
-  QuerySnapshot,
   Transaction,
 } from '@google-cloud/firestore';
 import { getMetadataStorage } from './MetadataUtils';
@@ -9,9 +7,7 @@ import { FullCollectionMetadata, MetadataStorageConfig } from './MetadataStorage
 import { NoFirestoreError, NoMetadataError, NoParentPropertyKeyError } from './Errors';
 import { IEntity } from './types';
 import { AbstractFirestoreRepository } from './AbstractFirestoreRepository';
-import { get } from 'http';
 import { FirestoreTransaction } from './Transaction/FirestoreTransaction';
-import { getRepository } from './helpers';
 
 jest.mock('./MetadataUtils');
 jest.mock('./helpers');

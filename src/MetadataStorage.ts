@@ -17,7 +17,6 @@ import {
   IncompleteOrInvalidPathError,
   InvalidRepositoryIndexError,
 } from './Errors';
-import { CustomRepository } from './Decorators';
 
 // Unified collection metadata combines the metadata for both collections and subcollections
 export interface BaseCollectionMetadata<T extends IEntity = IEntity> {

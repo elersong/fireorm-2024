@@ -8,7 +8,6 @@ import { BaseFirestoreRepository } from './BaseFirestoreRepository';
 import { IRepository, Constructor } from './types';
 import {
   CollectionPathNotFoundError,
-  IncompleteOrInvalidPathError,
   InvalidRepositoryIndexError,
 } from './Errors';
 
