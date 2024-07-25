@@ -12,6 +12,7 @@ import { BaseFirestoreRepository } from './BaseFirestoreRepository';
 import { Band } from '../test/BandCollection';
 import { Firestore } from '@google-cloud/firestore';
 import { NoMetadataError } from './Errors';
+import { get } from 'http';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MockFirebase = require('mock-cloud-firestore');
@@ -22,7 +23,7 @@ describe('BaseFirestoreRepository', () => {
   let firestore: Firestore;
 
   beforeEach(() => {
-    const fixture = Object.assign({}, getFixture());
+    const fixture = {...getFixture()};
     const firebase = new MockFirebase(fixture, {
       isNaiveSnapshotListenerEnabled: false,
     });
