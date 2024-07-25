@@ -65,7 +65,7 @@ describe('Integration test: Batches', () => {
       .whereArrayContains(b => b.genres, 'custom-genre')
       .find();
 
-    const orderedBands = createdBands.sort((a, b) => b.name.localeCompare(a.name));
+    const orderedBands = [...createdBands].sort((a, b) => b.name.localeCompare(a.name));
 
     expect(orderedBands.length).toEqual(2);
     expect(orderedBands[0].name).toEqual(bands[0].name);
@@ -140,7 +140,7 @@ describe('Integration test: Batches', () => {
       .whereArrayContains(b => b.genres, 'custom-genre')
       .find();
 
-    const orderedBands = createdBands.sort((a, b) => b.name.localeCompare(a.name));
+    const orderedBands = [...createdBands].sort((a, b) => b.name.localeCompare(a.name));
 
     expect(orderedBands.length).toEqual(2);
     expect(orderedBands[0].name).toEqual(bands[0].name);
@@ -216,7 +216,7 @@ describe('Integration test: Batches', () => {
     // Assert that the subcollection was actually created
     const createdAlbums = await band.albums.find();
 
-    const orderedAlbums = createdAlbums.sort((a, b) => a.name.localeCompare(b.name));
+    const orderedAlbums = [...createdAlbums].sort((a, b) => a.name.localeCompare(b.name));
 
     expect(orderedAlbums.length).toEqual(2);
     expect(orderedAlbums[0].name).toEqual(albums[0].name);

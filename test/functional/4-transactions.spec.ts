@@ -242,7 +242,7 @@ describe('Integration test: Transactions', () => {
     expect(savedBand.id).toEqual(band.id);
 
     const createdAlbums = await band.albums.find();
-    const orderedAlbums = createdAlbums.sort((a, b) => a.name.localeCompare(b.name));
+    const orderedAlbums = [...createdAlbums].sort((a, b) => a.name.localeCompare(b.name));
 
     expect(orderedAlbums.length).toEqual(2);
     expect(orderedAlbums[0].name).toEqual(albums[0].name);
