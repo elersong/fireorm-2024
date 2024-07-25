@@ -31,7 +31,7 @@ import { MetadataStorageConfig, FullCollectionMetadata } from './MetadataStorage
 import { BaseRepository } from './BaseRepository';
 import { QueryBuilder } from './QueryBuilder';
 import { serializeEntity } from './utils';
-import { NoMetadataError } from './Errors';
+import { NoFirestoreError, NoMetadataError, NoParentPropertyKeyError } from './Errors';
 
 export abstract class AbstractFirestoreRepository<T extends IEntity>
   extends BaseRepository
@@ -49,7 +49,7 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
     const { getCollection, config, firestoreRef } = getMetadataStorage();
 
     if (!firestoreRef) {
-      throw new Error('Firestore must be initialized first');
+      throw new NoFirestoreError('new AbstractFirestoreRepository()');
     }
 
     this.config = config;
@@ -103,9 +103,7 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
       const parentPropertyKey = subCol.parentProps?.parentPropertyKey;
 
       if (!parentPropertyKey) {
-        throw new Error(
-          `Parent property key not found in registered subcollection of entity (${entity.constructor.name})`
-        );
+        throw new NoParentPropertyKeyError(entity);
       }
 
       // If we are inside a transaction, our subcollections should also be TransactionRepositories

@@ -100,6 +100,12 @@ export class NoParentCollectionError extends Error {
   }
 }
 
+export class NoParentPropertyKeyError extends Error {
+  constructor(entity: IEntity) {
+    super(`Parent property key not found in registered subcollection of entity (${entity.constructor.name})`);
+  }
+}
+
 export class InvalidInputError extends Error {
   constructor(message: string) {
     super(`Invalid Input: ${message}`);
