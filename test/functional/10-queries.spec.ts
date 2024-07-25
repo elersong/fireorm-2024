@@ -3,14 +3,15 @@ import { Band as BandEntity } from '../fixture';
 import { getUniqueColName } from '../setup';
 
 describe('Integration test: Queries', () => {
-  @Collection(getUniqueColName('band-queries-test'))
+  const bandCollectionName = getUniqueColName('band-queries-test');
+  @Collection(bandCollectionName)
   class Band extends BandEntity {}
 
   let bandRepository: BaseFirestoreRepository<Band>;
 
   beforeEach(async () => {
     // instantiate the repositories
-    bandRepository = getRepository(Band);
+    bandRepository = getRepository(Band, bandCollectionName);
 
     const ewf = new Band();
     ewf.id = 'earth-wind-and-fire';

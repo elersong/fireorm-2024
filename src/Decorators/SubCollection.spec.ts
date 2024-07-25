@@ -18,40 +18,24 @@ describe('SubCollectionDecorator', () => {
     class SubEntity {
       public id: string;
     }
-    @Collection()
-    class Entity {
-      id: string;
-
-      @SubCollection(SubEntity, 'subs')
-      subentity: ISubCollection<SubEntity>;
-    }
-
-    expect(setCollection).toHaveBeenCalledWith({
-      name: 'subs',
-      entityConstructor: SubEntity,
-      parentEntityConstructor: Entity,
-      propertyKey: 'subentity',
-    });
-  });
-
-  it('should register collections with default name', () => {
-    class SubEntity {
-      public id: string;
-    }
 
     @Collection()
     class Entity {
       id: string;
 
+      // TODO: figure out how to resolve this ts error
       @SubCollection(SubEntity)
       subentity: ISubCollection<SubEntity>;
     }
 
     expect(setCollection).toHaveBeenCalledWith({
-      name: 'SubEntities',
+      name: 'subentity',
       entityConstructor: SubEntity,
-      parentEntityConstructor: Entity,
-      propertyKey: 'subentity',
+      parentProps: {
+        parentEntityConstructor: Entity,
+        parentPropertyKey: 'subentity',
+        parentCollectionName: 'Entities',
+      },
     });
   });
 });

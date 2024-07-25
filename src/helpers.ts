@@ -8,8 +8,14 @@ import {
 } from './types';
 import { FirestoreTransaction } from './Transaction/FirestoreTransaction';
 import { FirestoreBatch } from './Batch/FirestoreBatch';
-import { BaseRepository } from './BaseRepository';
-import { AbstractFirestoreRepository } from './AbstractFirestoreRepository';
+import {
+  InvalidCollectionOrPathError,
+  InvalidInputError,
+  NoCollectionNameError,
+  NoCustomRepositoryError,
+  NoFirestoreError,
+  NoParentCollectionError,
+} from './Errors';
 
 type RepositoryType = 'default' | 'base' | 'custom' | 'transaction';
 
@@ -19,49 +25,61 @@ function _getRepository<
   R extends BaseFirestoreRepository<T> = BaseFirestoreRepository<T>
 >(
   entityConstructorOrPath: EntityConstructorOrPath<T>,
+  providedCollectionName?: string,
   repositoryType?: RepositoryType // Optional parameter
 ): R {
   const metadataStorage = getMetadataStorage();
-
   if (!metadataStorage.firestoreRef) {
-    throw new Error('Firestore must be initialized first');
+    throw new NoFirestoreError('_getRepository');
   }
-
-  const collection = metadataStorage.getCollection(entityConstructorOrPath);
 
   const isPath = typeof entityConstructorOrPath === 'string';
-  const collectionName =
-    typeof entityConstructorOrPath === 'string'
-      ? entityConstructorOrPath
-      : entityConstructorOrPath.name;
-
-  if (!collection) {
-    const error = isPath
-      ? `'${collectionName}' is not a valid path for a collection`
-      : `'${collectionName}' is not a valid collection`;
-    throw new Error(error);
+  let collectionName: string;
+  if (isPath) {
+    collectionName = getLastSegment(entityConstructorOrPath);
+  } else if (providedCollectionName) {
+    collectionName = providedCollectionName;
+  } else {
+    throw new NoCollectionNameError();
   }
 
-  const repository = metadataStorage.getRepository(collection.entityConstructor);
+  const collection = metadataStorage.getCollection(entityConstructorOrPath, collectionName);
+
+  if (!collection) {
+    throw new InvalidCollectionOrPathError(collectionName, isPath);
+  }
+
+  const repository = metadataStorage.getRepository(collection.entityConstructor, collectionName);
 
   const useCustomRepository = repositoryType === 'custom' || (!repositoryType && repository);
 
   if (useCustomRepository && !repository) {
-    throw new Error(`'${collectionName}' does not have a custom repository.`);
+    throw new NoCustomRepositoryError(collectionName);
   }
 
-  if (collection.parentEntityConstructor) {
-    const parentCollection = metadataStorage.getCollection(collection.parentEntityConstructor);
+  // Get the parent collection if it exists
+  if (collection.parentProps) {
+    const { parentCollectionName, parentEntityConstructor } = collection.parentProps;
+    const parentCollection = metadataStorage.getCollection(
+      parentEntityConstructor,
+      parentCollectionName
+    );
     if (!parentCollection) {
-      throw new Error(`'${collectionName}' does not have a valid parent collection.`);
+      throw new NoParentCollectionError(collectionName);
     }
   }
 
   const RepositoryClass = useCustomRepository
-    ? (repository?.target as new (pathOrConstructor: string | IEntityConstructor) => R)
-    : (BaseFirestoreRepository as new (pathOrConstructor: string | IEntityConstructor) => R);
+    ? (repository?.target as new (
+        pathOrConstructor: string | IEntityConstructor,
+        colName: string
+      ) => R)
+    : (BaseFirestoreRepository as new (
+        pathOrConstructor: string | IEntityConstructor,
+        colName: string
+      ) => R);
 
-  return new RepositoryClass(entityConstructorOrPath);
+  return new RepositoryClass(entityConstructorOrPath, collectionName);
 }
 
 export function getRepository<
@@ -69,9 +87,10 @@ export function getRepository<
   R extends BaseFirestoreRepository<T> = BaseFirestoreRepository<T>
 >(
   entityConstructorOrPath: EntityConstructorOrPath<T>,
+  collectionName?: string,
   repositoryType?: RepositoryType // Optional parameter
 ): R {
-  return _getRepository<T, R>(entityConstructorOrPath, repositoryType);
+  return _getRepository<T, R>(entityConstructorOrPath, collectionName, repositoryType);
 }
 
 /**
@@ -79,19 +98,31 @@ export function getRepository<
  */
 export const GetRepository = getRepository;
 
-export function getCustomRepository<T extends IEntity>(entityOrPath: EntityConstructorOrPath<T>) {
-  return _getRepository(entityOrPath, 'custom');
+export function getCustomRepository<T extends IEntity>(
+  entityOrPath: EntityConstructorOrPath<T>,
+  collectionName: string
+) {
+  // TODO: Add tests for calling this with both an entity and a path
+  if (!collectionName) {
+    throw new NoCollectionNameError();
+  }
+  return _getRepository(entityOrPath, collectionName, 'custom');
 }
-
 /**
  * @deprecated Use getCustomRepository. This will be removed in a future version.
  */
 export const GetCustomRepository = getCustomRepository;
 
-export function getBaseRepository<T extends IEntity>(entityOrPath: EntityConstructorOrPath<T>) {
-  return _getRepository(entityOrPath, 'base');
+export function getBaseRepository<T extends IEntity>(
+  entityOrPath: EntityConstructorOrPath<T>,
+  collectionName: string
+) {
+  // TODO: Add tests for calling this with both an entity and a path
+  if (!collectionName) {
+    throw new NoCollectionNameError();
+  }
+  return _getRepository(entityOrPath, collectionName, 'base');
 }
-
 /**
  * @deprecated Use getBaseRepository. This will be removed in a future version.
  */
@@ -101,16 +132,16 @@ export const runTransaction = async <T>(executor: (tran: FirestoreTransaction) =
   const metadataStorage = getMetadataStorage();
 
   if (!metadataStorage.firestoreRef) {
-    throw new Error('Firestore must be initialized first');
+    throw new NoFirestoreError('runTransaction');
   }
 
   return metadataStorage.firestoreRef.runTransaction(async t => {
     const tranRefStorage: ITransactionReferenceStorage = new Set();
     const result = await executor(new FirestoreTransaction(t, tranRefStorage));
 
-    tranRefStorage.forEach(({ entity, path, propertyKey }) => {
+    tranRefStorage.forEach(({ entity, path, parentPropertyKey }) => {
       const record = entity as unknown as Record<string, unknown>;
-      record[propertyKey] = getRepository(path);
+      record[parentPropertyKey] = getRepository(path);
     });
 
     return result;
@@ -127,8 +158,29 @@ export const createBatch = () => {
   const metadataStorage = getMetadataStorage();
 
   if (!metadataStorage.firestoreRef) {
-    throw new Error('Firestore must be initialized first');
+    throw new NoFirestoreError('createBatch');
   }
 
   return new FirestoreBatch(metadataStorage.firestoreRef);
 };
+
+export function getLastSegment(path: string): string {
+  if (!path || typeof path !== 'string') {
+    throw new InvalidInputError('Path must be a non-empty string');
+  }
+
+  const segments = path.split('/');
+  const segmentCount = segments.length;
+
+  if (segmentCount === 0 || segmentCount % 2 === 0) {
+    throw new InvalidInputError('Path must have an odd number of segments greater than 0');
+  }
+
+  const lastSegment = segments.pop();
+
+  if (!lastSegment) {
+    throw new InvalidInputError('Path segments cannot be empty strings');
+  }
+
+  return lastSegment;
+}

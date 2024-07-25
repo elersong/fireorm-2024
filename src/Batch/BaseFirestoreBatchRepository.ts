@@ -12,11 +12,12 @@ export class BaseFirestoreBatchRepository<T extends IEntity> implements IBatchRe
 
   constructor(
     protected pathOrConstructor: EntityConstructorOrPath<T>,
-    protected batch: FirestoreBatchUnit
+    protected batch: FirestoreBatchUnit,
+    protected collectionName?: string
   ) {
     const { getCollection, firestoreRef, config } = getMetadataStorage();
 
-    const colMetadata = getCollection(pathOrConstructor);
+    const colMetadata = getCollection(pathOrConstructor, collectionName);
 
     if (!colMetadata) {
       throw new NoMetadataError(pathOrConstructor);

@@ -3,14 +3,15 @@ import { Band as BandEntity } from '../fixture';
 import { getUniqueColName } from '../setup';
 
 describe('Integration test: Ignore Properties', () => {
-  @Collection(getUniqueColName('band-simple-repository'))
+  const bandCollectionName: string = getUniqueColName('band-simple-repository-ignore-properties');
+  @Collection(bandCollectionName)
   class Band extends BandEntity {
     @Ignore()
     temporaryName: string;
   }
 
   test('should ignore properties decorated with Ignore()', async () => {
-    const bandRepository = getRepository(Band);
+    const bandRepository = getRepository(Band, bandCollectionName);
     // Create a band
     const dt = new Band();
     dt.id = 'dream-theater';

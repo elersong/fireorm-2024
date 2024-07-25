@@ -11,7 +11,9 @@ import { getUniqueColName } from '../setup';
 
 describe('Integration test: Batches', () => {
   class Album extends AlbumEntity {}
-  @Collection(getUniqueColName('band-in-batch'))
+
+  const bandCollectionName: string = getUniqueColName('band-in-batch');
+  @Collection(bandCollectionName)
   class Band extends BandEntity {
     extra?: { website: string };
 
@@ -22,7 +24,7 @@ describe('Integration test: Batches', () => {
   let bandRepository: BaseFirestoreRepository<Band> = null;
 
   beforeEach(() => {
-    bandRepository = getRepository(Band);
+    bandRepository = getRepository(Band, bandCollectionName);
   });
 
   it('should do CRUD operations inside batches in repositories', async () => {
@@ -128,7 +130,7 @@ describe('Integration test: Batches', () => {
     ];
 
     const batch = createBatch();
-    const bandBatchRepository = batch.getRepository(Band);
+    const bandBatchRepository = batch.getRepository(Band, bandCollectionName);
     bands.forEach(b => bandBatchRepository.create(b));
 
     await batch.commit();
@@ -146,7 +148,7 @@ describe('Integration test: Batches', () => {
 
     // Update website for all bands with an update batch
     const updateBatch = createBatch();
-    const bandUpdateBatch = updateBatch.getRepository(Band);
+    const bandUpdateBatch = updateBatch.getRepository(Band, bandCollectionName);
 
     createdBands.forEach(b => {
       b.extra = { website: 'https://fake.web' };
@@ -166,7 +168,7 @@ describe('Integration test: Batches', () => {
 
     // Delete bands with an delete batch
     const deleteBatch = createBatch();
-    const bandDeleteBatch = deleteBatch.getRepository(Band);
+    const bandDeleteBatch = deleteBatch.getRepository(Band, bandCollectionName);
 
     createdBands.forEach(b => bandDeleteBatch.delete(b));
 
@@ -181,7 +183,7 @@ describe('Integration test: Batches', () => {
   });
 
   it('should do CRUD operations in subcollections', async () => {
-    const bandRepository = getRepository(Band);
+    const bandRepository = getRepository(Band, bandCollectionName);
 
     const band = await bandRepository.create({
       name: 'Opeth',

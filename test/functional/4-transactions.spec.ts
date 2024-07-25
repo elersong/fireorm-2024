@@ -12,7 +12,8 @@ import { getUniqueColName } from '../setup';
 describe('Integration test: Transactions', () => {
   class Album extends AlbumEntity {}
 
-  @Collection(getUniqueColName('band-with-transactions'))
+  const bandCollectionName: string = getUniqueColName('band-with-transactions');
+  @Collection(bandCollectionName)
   class Band extends BandEntity {
     extra?: { website: string };
 
@@ -23,7 +24,7 @@ describe('Integration test: Transactions', () => {
   let bandRepository: BaseFirestoreRepository<Band> = null;
 
   beforeEach(() => {
-    bandRepository = getRepository(Band);
+    bandRepository = getRepository(Band, bandCollectionName);
   });
 
   it('should do CRUD operations inside transactions in repositories', async () => {
@@ -129,7 +130,7 @@ describe('Integration test: Transactions', () => {
     };
 
     const savedBand = await runTransaction<Band>(async tran => {
-      const bandTranRepository = tran.getRepository(Band);
+      const bandTranRepository = tran.getRepository(Band, bandCollectionName);
       await bandTranRepository.create(ti);
       return bandTranRepository.create(dt);
     });
@@ -146,7 +147,7 @@ describe('Integration test: Transactions', () => {
     devinT.genres = ['progressive-metal', 'extreme-metal'];
 
     await runTransaction(async tran => {
-      const bandTranRepository = tran.getRepository(Band);
+      const bandTranRepository = tran.getRepository(Band, bandCollectionName);
 
       const savedBandWithoutId = await bandTranRepository.create(devinT);
       expect(savedBandWithoutId.name).toEqual(devinT.name);
@@ -155,7 +156,7 @@ describe('Integration test: Transactions', () => {
 
     // Read a band inside transaction
     await runTransaction(async tran => {
-      const bandTranRepository = tran.getRepository(Band);
+      const bandTranRepository = tran.getRepository(Band, bandCollectionName);
 
       const foundBand = await bandTranRepository.findById(dt.id);
       expect(foundBand.id).toEqual(dt.id);
@@ -164,7 +165,7 @@ describe('Integration test: Transactions', () => {
 
     // Update a band inside transaction
     const updatedBand = await runTransaction<Band>(async tran => {
-      const bandTranRepository = tran.getRepository(Band);
+      const bandTranRepository = tran.getRepository(Band, bandCollectionName);
 
       const dream = await bandTranRepository.findById(dt.id);
 
@@ -181,7 +182,7 @@ describe('Integration test: Transactions', () => {
 
     // Filter a band by subfield inside transaction
     await runTransaction(async tran => {
-      const bandTranRepository = tran.getRepository(Band);
+      const bandTranRepository = tran.getRepository(Band, bandCollectionName);
 
       const byWebsite = await bandTranRepository
         .whereEqualTo(a => a.extra.website, 'www.dreamtheater.net')
@@ -191,7 +192,7 @@ describe('Integration test: Transactions', () => {
 
     // Delete a band
     await runTransaction(async tran => {
-      const bandTranRepository = tran.getRepository(Band);
+      const bandTranRepository = tran.getRepository(Band, bandCollectionName);
 
       await bandTranRepository.delete(dt.id);
     });
@@ -225,7 +226,7 @@ describe('Integration test: Transactions', () => {
     ];
 
     await runTransaction<Band>(async tran => {
-      const bandTranRepository = tran.getRepository(Band);
+      const bandTranRepository = tran.getRepository(Band, bandCollectionName);
       const created = await bandTranRepository.create(band);
 
       for (const a of albums) {

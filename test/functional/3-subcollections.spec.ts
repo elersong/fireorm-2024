@@ -12,7 +12,8 @@ import { TransactionRepository } from '../../src/Transaction/BaseFirestoreTransa
 describe('Integration test: SubCollections', () => {
   class Album extends AlbumEntity {}
 
-  @Collection(getUniqueColName('band-with-subcollections'))
+  const fullBandCollectionName: string = getUniqueColName('band-with-subcollections');
+  @Collection(fullBandCollectionName)
   class FullBand extends BandEntity {
     @SubCollection(Album)
     albums: BaseFirestoreRepository<Album>;
@@ -21,7 +22,7 @@ describe('Integration test: SubCollections', () => {
   let fullBandRepository: BaseFirestoreRepository<FullBand> = null;
 
   beforeEach(async () => {
-    fullBandRepository = getRepository(FullBand);
+    fullBandRepository = getRepository(FullBand, fullBandCollectionName);
     const seed = getInitialData().map(({ albums, ...band }) => ({
       band,
       albums,
@@ -146,7 +147,7 @@ describe('Integration test: SubCollections', () => {
     class Label implements IEntity {
       id: string;
 
-      @SubCollection(FullBand, makeUnique('band-subcollection'))
+      @SubCollection(FullBand)
       bands: BaseFirestoreRepository<FullBand>;
     }
 

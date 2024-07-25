@@ -4,11 +4,11 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
+  
     {
       "type": "node",
       "request": "launch",
       "name": "Launch current file w/ ts-node",
-      "protocol": "inspector",
       "args": ["${relativeFile}"],
       "cwd": "${workspaceRoot}",
       "runtimeArgs": ["-r", "ts-node/register"],
@@ -26,8 +26,32 @@
         "--verbose"
       ],
       "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "port": 9229
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Jest Tests",
+      "program": "${workspaceRoot}/node_modules/.bin/jest",
+      "args": [
+        "--runInBand"
+      ],
+      "runtimeArgs": [
+        "--inspect-brk"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Current Jest Unit Test",
+      "program": "${workspaceRoot}/node_modules/.bin/jest",
+      "args": ["${file}"],
+      "runtimeArgs": ["--inspect-brk"],
+      "cwd": "${workspaceRoot}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
     }
   ]
 }

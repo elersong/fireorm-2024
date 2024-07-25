@@ -19,3 +19,5 @@ export class FirestoreBatchSingleRepository<T extends IEntity>
     await this.batch.commit();
   }
 }
+
+// TODO: Does this need to exist?

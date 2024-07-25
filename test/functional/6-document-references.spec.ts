@@ -15,7 +15,7 @@ describe('Integration test: Using Document References', () => {
   let bandRepository: BaseFirestoreRepository<Band> = null;
 
   beforeEach(() => {
-    bandRepository = getRepository(Band);
+    bandRepository = getRepository(Band, colName);
 
     /*
      * Yes, this is a hack.

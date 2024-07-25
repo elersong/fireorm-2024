@@ -80,7 +80,7 @@ export class BaseFirestoreRepository<T extends IEntity>
     const { runTransaction } = await import('./helpers');
 
     return runTransaction<R>(tran => {
-      const repository = tran.getRepository<T>(this.path);
+      const repository = tran.getRepository<T>(this.path, this.name);
       return executor(repository);
     });
   }

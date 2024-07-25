@@ -3,16 +3,18 @@ import { CustomRepository, BaseFirestoreRepository, getRepository, Collection } 
 import { getUniqueColName } from '../setup';
 
 describe('Integration test: Custom Repository', () => {
-  @Collection(getUniqueColName('band-custom-repository'))
+  const bandCollectionName: string = getUniqueColName('band-custom-repository');
+  @Collection(bandCollectionName)
   class Band extends BandEntity {}
 
-  @Collection(getUniqueColName('bus-custom-repository'))
+  const busCollectionName: string = getUniqueColName('bus-custom-repository');
+  @Collection(busCollectionName)
   class Bus extends BandEntity {}
 
-  @CustomRepository(Bus)
+  @CustomRepository(Bus, busCollectionName)
   class CustomBusRepository extends BaseFirestoreRepository<Bus> {}
 
-  @CustomRepository(Band)
+  @CustomRepository(Band, bandCollectionName)
   class CustomRockBandRepository extends BaseFirestoreRepository<Band> {
     filterByGenre(genre: string) {
       return this.whereArrayContains('genres', genre);
@@ -31,8 +33,8 @@ describe('Integration test: Custom Repository', () => {
 
   beforeEach(async () => {
     // see comment above
-    rockBandRepository = getRepository(Band);
-    tourBusRepository = getRepository(Bus);
+    rockBandRepository = getRepository(Band, bandCollectionName);
+    tourBusRepository = getRepository(Bus, busCollectionName);
 
     // Clear all documents
     await rockBandRepository.clear();
