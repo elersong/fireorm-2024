@@ -84,63 +84,61 @@ describe('BaseFirestoreRepository', () => {
     it.todo('must throw if the limit is less than 0');
   });
 
-  describe('ordering', () => {
-    describe('orderByAscending', () => {
-      it('must order repository objects', async () => {
-        const bands = await bandRepository.orderByAscending('formationYear').find();
-        expect(bands[0].id).toEqual('the-speckled-band');
-      });
+  describe('orderByAscending', () => {
+    it('must order repository objects', async () => {
+      const bands = await bandRepository.orderByAscending('formationYear').find();
+      expect(bands[0].id).toEqual('the-speckled-band');
+    });
 
-      it('must order the objects in a subcollection', async () => {
-        const pt = await bandRepository.findById('porcupine-tree');
-        const albumsSubColl = pt?.albums;
-        const discographyNewestFirst = await albumsSubColl?.orderByAscending('releaseDate').find();
-        if (discographyNewestFirst) {
-          expect(discographyNewestFirst[0].id).toEqual('lightbulb-sun');
-        }
-      });
+    it('must order the objects in a subcollection', async () => {
+      const pt = await bandRepository.findById('porcupine-tree');
+      const albumsSubColl = pt?.albums;
+      const discographyNewestFirst = await albumsSubColl?.orderByAscending('releaseDate').find();
+      if (discographyNewestFirst) {
+        expect(discographyNewestFirst[0].id).toEqual('lightbulb-sun');
+      }
+    });
 
-      it('must be chainable with where* filters', async () => {
-        const pt = await bandRepository.findById('porcupine-tree');
-        const albumsSubColl = pt?.albums;
-        const discographyNewestFirst = await albumsSubColl
-          ?.whereGreaterOrEqualThan('releaseDate', new Date('2001-01-01'))
-          .orderByAscending('releaseDate')
-          .find();
-        if (discographyNewestFirst) {
-          expect(discographyNewestFirst[0].id).toEqual('in-absentia');
-        }
-      });
+    it('must be chainable with where* filters', async () => {
+      const pt = await bandRepository.findById('porcupine-tree');
+      const albumsSubColl = pt?.albums;
+      const discographyNewestFirst = await albumsSubColl
+        ?.whereGreaterOrEqualThan('releaseDate', new Date('2001-01-01'))
+        .orderByAscending('releaseDate')
+        .find();
+      if (discographyNewestFirst) {
+        expect(discographyNewestFirst[0].id).toEqual('in-absentia');
+      }
+    });
 
-      it('must be chainable with limit', async () => {
-        const bands = await bandRepository.orderByAscending('formationYear').limit(3).find();
-        const lastBand = bands[bands.length - 1];
-        expect(lastBand.id).toEqual('red-hot-chili-peppers');
-      });
+    it('must be chainable with limit', async () => {
+      const bands = await bandRepository.orderByAscending('formationYear').limit(3).find();
+      const lastBand = bands[bands.length - 1];
+      expect(lastBand.id).toEqual('red-hot-chili-peppers');
+    });
 
-      it('must throw an Error if an orderBy* function is called more than once in the same expression', async () => {
-        const pt = await bandRepository.findById('porcupine-tree');
-        const albumsSubColl = pt?.albums;
-        expect(() => {
-          albumsSubColl?.orderByAscending('releaseDate').orderByDescending('releaseDate');
-        }).toThrow();
-      });
+    it('must throw an Error if an orderBy* function is called more than once in the same expression', async () => {
+      const pt = await bandRepository.findById('porcupine-tree');
+      const albumsSubColl = pt?.albums;
+      expect(() => {
+        albumsSubColl?.orderByAscending('releaseDate').orderByDescending('releaseDate');
+      }).toThrow();
+    });
 
-      it('must throw an Error if an orderBy* function is called more than once in the same expression ascending', async () => {
-        const pt = await bandRepository.findById('porcupine-tree');
-        const albumsSubColl = pt?.albums;
-        expect(() => {
-          albumsSubColl?.orderByAscending('releaseDate').orderByAscending('releaseDate');
-        }).toThrow();
-      });
+    it('must throw an Error if an orderBy* function is called more than once in the same expression ascending', async () => {
+      const pt = await bandRepository.findById('porcupine-tree');
+      const albumsSubColl = pt?.albums;
+      expect(() => {
+        albumsSubColl?.orderByAscending('releaseDate').orderByAscending('releaseDate');
+      }).toThrow();
+    });
 
-      it('must succeed when orderBy* function is called more than once in the same expression with different fields', async () => {
-        const pt = await bandRepository.findById('porcupine-tree');
-        const albumsSubColl = pt?.albums;
-        expect(() => {
-          albumsSubColl?.orderByAscending('releaseDate').orderByDescending('name');
-        }).not.toThrow();
-      });
+    it('must succeed when orderBy* function is called more than once in the same expression with different fields', async () => {
+      const pt = await bandRepository.findById('porcupine-tree');
+      const albumsSubColl = pt?.albums;
+      expect(() => {
+        albumsSubColl?.orderByAscending('releaseDate').orderByDescending('name');
+      }).not.toThrow();
     });
   });
 
