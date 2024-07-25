@@ -23,7 +23,7 @@ describe('BaseFirestoreRepository', () => {
   let firestore: Firestore;
 
   beforeEach(() => {
-    const fixture = {...getFixture()};
+    const fixture = { ...getFixture() };
     const firebase = new MockFirebase(fixture, {
       isNaiveSnapshotListenerEnabled: false,
     });
