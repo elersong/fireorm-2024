@@ -7,7 +7,6 @@ import {
 } from '@google-cloud/firestore';
 import { serializeKey } from './Decorators/Serialize';
 import { ValidationError } from './Errors/ValidationError';
-
 import {
   IEntity,
   IQueryBuilder,
@@ -22,21 +21,15 @@ import {
   ICustomQuery,
   FirestoreSerializable,
 } from './types';
-
 import { isDocumentReference, isGeoPoint, isObject, isTimestamp } from './TypeGuards';
-
 import { getMetadataStorage } from './MetadataUtils';
 import { MetadataStorageConfig, FullCollectionMetadata } from './MetadataStorage';
-
 import { BaseRepository } from './BaseRepository';
 import { QueryBuilder } from './QueryBuilder';
 import { serializeEntity } from './utils';
 import { NoFirestoreError, NoMetadataError, NoParentPropertyKeyError } from './Errors';
 
-export abstract class AbstractFirestoreRepository<T extends IEntity>
-  extends BaseRepository
-  implements IRepository<T>
-{
+export abstract class AbstractFirestoreRepository<T extends IEntity> extends BaseRepository implements IRepository<T> {
   protected readonly colMetadata: FullCollectionMetadata;
   protected readonly path: string;
   protected readonly name: string; // TODO: Is this used?
@@ -180,6 +173,36 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
   ): T[] => {
     return q.docs.filter(d => d.exists).map(d => this.extractTFromDocSnap(d, tran, tranRefStorage));
   };
+
+  /**
+   * Uses class-validator to validate an entity using decorators set in the collection class
+   *
+   * @param item class or object representing an entity
+   * @returns {Promise<ValidationError[]>} An array of class-validator errors
+   */
+  async validate(item: T): Promise<ValidationError[]> {
+    try {
+      const classValidator = await import('class-validator');
+      const { entityConstructor: Entity } = this.colMetadata;
+
+      /**
+       * Instantiate plain objects into an entity class
+       */
+      const entity = item instanceof Entity ? item : Object.assign(new Entity(), item);
+
+      return classValidator.validate(entity, this.config.validatorOptions);
+    } catch (error: unknown) {
+      if (error instanceof Error && (error as { code?: string }).code === 'MODULE_NOT_FOUND') {
+        throw new Error(
+          'It looks like class-validator is not installed. Please run `npm i -S class-validator` to fix this error, or initialize FireORM with `validateModels: false` to disable validation.'
+        );
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  // ------------------ IQueryable ------------------
 
   /**
    * Returns a new QueryBuilder with a filter specifying that the
@@ -332,52 +355,6 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
   }
 
   /**
-   * Returns a new QueryBuilder with a maximum number of results
-   * to return. Can only be used once per query.
-   *
-   * @param {number} limitVal maximum number of results to return
-   * Must be greater or equal than 0
-   * @returns {IQueryBuilder<T>} QueryBuilder A new QueryBuilder with
-   * the specified limit applied
-   * @memberof AbstractFirestoreRepository
-   */
-  limit(limitVal: number): IQueryBuilder<T> {
-    if (limitVal < 0) {
-      throw new Error(`limitVal must be greater than 0. It received: ${limitVal}`);
-    }
-
-    return new QueryBuilder<T>(this).limit(limitVal);
-  }
-
-  /**
-   * Returns a new QueryBuilder with an additional ascending order
-   * specified by @param prop Can only be used once per query.
-   *
-   * @param {IWherePropParam<T>} prop field to be ordered on, where
-   * prop could be keyof T or a lambda where T is the first parameter
-   * @returns {QueryBuilder<T>} A new QueryBuilder with the specified
-   * ordering applied.
-   * @memberof AbstractFirestoreRepository
-   */
-  orderByAscending(prop: IWherePropParam<T>): IQueryBuilder<T> {
-    return new QueryBuilder<T>(this).orderByAscending(prop);
-  }
-
-  /**
-   * Returns a new QueryBuilder with an additional descending order
-   * specified by @param prop Can only be used once per query.
-   *
-   * @param {IWherePropParam<T>} prop field to be ordered on, where
-   * prop could be keyof T or a lambda where T is the first parameter
-   * @returns {QueryBuilder<T>} A new QueryBuilder with the specified
-   * ordering applied.
-   * @memberof AbstractFirestoreRepository
-   */
-  orderByDescending(prop: IWherePropParam<T>): IQueryBuilder<T> {
-    return new QueryBuilder<T>(this).orderByDescending(prop);
-  }
-
-  /**
    * Execute the query and applies all the filters (if specified)
    *
    * @returns {Promise<T[]>} List of documents that matched the filters
@@ -414,33 +391,57 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
     return new QueryBuilder<T>(this).customQuery(func);
   }
 
+  // ------------------ ILimitable ------------------
+
   /**
-   * Uses class-validator to validate an entity using decorators set in the collection class
+   * Returns a new QueryBuilder with a maximum number of results
+   * to return. Can only be used once per query.
    *
-   * @param item class or object representing an entity
-   * @returns {Promise<ValidationError[]>} An array of class-validator errors
+   * @param {number} limitVal maximum number of results to return
+   * Must be greater or equal than 0
+   * @returns {IQueryBuilder<T>} QueryBuilder A new QueryBuilder with
+   * the specified limit applied
+   * @memberof AbstractFirestoreRepository
    */
-  async validate(item: T): Promise<ValidationError[]> {
-    try {
-      const classValidator = await import('class-validator');
-      const { entityConstructor: Entity } = this.colMetadata;
-
-      /**
-       * Instantiate plain objects into an entity class
-       */
-      const entity = item instanceof Entity ? item : Object.assign(new Entity(), item);
-
-      return classValidator.validate(entity, this.config.validatorOptions);
-    } catch (error: unknown) {
-      if (error instanceof Error && (error as { code?: string }).code === 'MODULE_NOT_FOUND') {
-        throw new Error(
-          'It looks like class-validator is not installed. Please run `npm i -S class-validator` to fix this error, or initialize FireORM with `validateModels: false` to disable validation.'
-        );
-      } else {
-        throw error;
-      }
+  limit(limitVal: number): IQueryBuilder<T> {
+    if (limitVal < 0) {
+      throw new Error(`limitVal must be greater than 0. It received: ${limitVal}`);
     }
+
+    return new QueryBuilder<T>(this).limit(limitVal);
   }
+
+  // ------------------ IOrderable ----------------
+
+  /**
+   * Returns a new QueryBuilder with an additional ascending order
+   * specified by @param prop Can only be used once per query.
+   *
+   * @param {IWherePropParam<T>} prop field to be ordered on, where
+   * prop could be keyof T or a lambda where T is the first parameter
+   * @returns {QueryBuilder<T>} A new QueryBuilder with the specified
+   * ordering applied.
+   * @memberof AbstractFirestoreRepository
+   */
+  orderByAscending(prop: IWherePropParam<T>): IQueryBuilder<T> {
+    return new QueryBuilder<T>(this).orderByAscending(prop);
+  }
+
+  /**
+   * Returns a new QueryBuilder with an additional descending order
+   * specified by @param prop Can only be used once per query.
+   *
+   * @param {IWherePropParam<T>} prop field to be ordered on, where
+   * prop could be keyof T or a lambda where T is the first parameter
+   * @returns {QueryBuilder<T>} A new QueryBuilder with the specified
+   * ordering applied.
+   * @memberof AbstractFirestoreRepository
+   */
+  orderByDescending(prop: IWherePropParam<T>): IQueryBuilder<T> {
+    return new QueryBuilder<T>(this).orderByDescending(prop);
+  }
+
+  // ------------------ IQueryExecutor ----------------
 
   /**
    * Takes all the queries stored by QueryBuilder and executes them.
@@ -464,6 +465,8 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
     single?: boolean,
     customQuery?: ICustomQuery<T>
   ): Promise<T[]>;
+
+  // ------------------ IBaseRepository ----------------
 
   /**
    * Retrieve a document with the specified id.
