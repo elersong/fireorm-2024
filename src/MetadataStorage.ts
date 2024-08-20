@@ -20,7 +20,7 @@ import {
 
 // Unified collection metadata combines the metadata for both collections and subcollections
 export interface BaseCollectionMetadata<T extends IEntity = IEntity> {
-  name: string;
+  path: string;
   entityConstructor: IEntityConstructor<T>;
 }
 
@@ -37,36 +37,15 @@ export interface CollectionMetadataWithSegments<T extends IEntity = IEntity>
   segments: string[];
 }
 
-export interface FullCollectionMetadata extends CollectionMetadataWithSegments {
-  subCollections: CollectionMetadataWithSegments[];
-}
-
 export interface RepositoryMetadata {
   target: IEntityRepositoryConstructor;
   entity: IEntityConstructor;
-  // Custom Repositories have a collectionName
-  // TODO: Should all repositories have an assigned collectionName?
-  collectionName?: string;
 }
-
-export type RepositoryIndex = [string, string | null];
 
 export interface MetadataStorageConfig {
   validateModels: boolean;
   validatorOptions?: ValidatorOptions;
   throwOnDuplicatedCollection?: boolean;
-}
-
-// Make sure the input is a RepositoryIndex tuple
-export function validateRepositoryIndex(input: any): asserts input is RepositoryIndex {
-  if (
-    !Array.isArray(input) ||
-    input.length !== 2 ||
-    typeof input[0] !== 'string' ||
-    (input[1] !== null && typeof input[1] !== 'string')
-  ) {
-    throw new InvalidRepositoryIndexError();
-  }
 }
 
 export class MetadataStorage {
@@ -84,10 +63,8 @@ export class MetadataStorage {
   ): boolean {
     return (
       !!collection.parentProps &&
-      // Now check for validity of parentProps
       collection.parentProps.parentEntityConstructor !== null &&
-      collection.parentProps.parentPropertyKey !== null &&
-      collection.parentProps.parentCollectionName !== null
+      collection.parentProps.parentPropertyKey !== null
     );
   }
 
@@ -97,73 +74,90 @@ export class MetadataStorage {
   ): boolean {
     return (
       collection1.entityConstructor === collection2.entityConstructor &&
-      collection1.name === collection2.name &&
+      collection1.path === collection2.path &&
       collection1.parentProps?.parentEntityConstructor ===
         collection2.parentProps?.parentEntityConstructor &&
-      collection1.parentProps?.parentPropertyKey === collection2.parentProps?.parentPropertyKey &&
-      collection1.parentProps?.parentCollectionName ===
-        collection2.parentProps?.parentCollectionName
+      collection1.parentProps?.parentPropertyKey === collection2.parentProps?.parentPropertyKey
     );
   }
 
-  public getCollection = (
-    pathOrConstructor: string | IEntityConstructor,
-    collectionName?: string
-  ): FullCollectionMetadata | null => {
-    // All collections have a pathOrConstructor and a name
-
+  public async getCollection(
+    pathOrConstructor: string | IEntityConstructor
+  ): Promise<CollectionMetadataWithSegments | null> {
     let collection: CollectionMetadataWithSegments | undefined;
 
-    // If it is a path like users/user-id/messages/message-id/senders,
-    // take all the even segments [users/messages/senders] and
-    // look for an entity with those segments
     if (typeof pathOrConstructor === 'string') {
-      // TODO: Refactor with getLastSegment
       const segments = pathOrConstructor.split('/');
-      const colName = collectionName || segments[segments.length - 1];
 
-      // Throw error if incomplete segment
       if (segments.length % 2 === 0) {
         throw new IncompleteOrInvalidPathError(pathOrConstructor);
       }
 
-      // Throw error if path segment doesn't exist
-      if (!this.collections.map(col => col.name).includes(colName)) {
-        throw new CollectionPathNotFoundError(pathOrConstructor);
+      // Extract the relevant segments
+      const parentCollectionName = segments[segments.length - 3]; // e.g., "recipes"
+      const parentId = segments[segments.length - 2]; // e.g., "omelette"
+      const subcollectionName = segments[segments.length - 1]; // e.g., "ingredients"
+
+      // Determine if a matching collection is already registered
+      collection = this.collections.find(
+        c =>
+          c.entityConstructor.name === subcollectionName &&
+          c.parentProps?.parentEntityConstructor.name === parentCollectionName &&
+          c.parentProps?.parentId === parentId
+      );
+
+      if (!collection) {
+        // Attempt to dynamically load and register the collection
+        const parentPropertyKey = await determineParentPropertyKey(parentCollectionName, parentId, subcollectionName);
+
+        const topLevelCollection = this.firestoreRef.collection(subcollectionName);
+
+        const snapshot = await topLevelCollection
+          .where('parentCollection', '==', parentCollectionName)
+          .where('parentId', '==', parentId)
+          .where('parentPropertyKey', '==', parentPropertyKey)
+          .get();
+
+        if (!snapshot.empty) {
+          return this.registerCollectionMetadata({
+            path: pathOrConstructor,
+            entityConstructor: determineEntityConstructor(subcollectionName),
+            parentProps: {
+              parentEntityConstructor: determineEntityConstructor(parentCollectionName),
+              parentPropertyKey: parentPropertyKey,
+              parentId: parentId,
+            }
+          });
+        }
       }
-
-      const collectionSegments = segments.reduce<string[]>(
-        (acc, cur, index) => (index % 2 === 0 ? acc.concat(cur) : acc),
-        []
-      );
-
-      // TODO: Is the name check necessary? The name is included within the segments.
-      collection = this.collections.find(
-        c => arraysAreEqual(c.segments, collectionSegments) && c.name === colName
-      );
     } else {
+      // Entity constructor-based lookup
       collection = this.collections.find(
-        c => c.entityConstructor === pathOrConstructor && c.name === collectionName
+        c => c.entityConstructor === pathOrConstructor
       );
     }
 
-    if (!collection) {
-      return null;
-    }
+    return collection || null;
+  }
 
-    const subCollections = this.collections.filter(
-      s =>
-        this.isSubCollectionMetadata(s) &&
-        s.parentProps?.parentEntityConstructor === collection?.entityConstructor &&
-        s.parentProps?.parentCollectionName === collection?.name
-    );
+  private registerCollectionMetadata = (
+    col: EnforcedCollectionMetadata
+  ): CollectionMetadataWithSegments => {
+    const collectionMetadata: CollectionMetadataWithSegments = {
+      ...col,
+      segments: col.path.split('/'), // Split the path to generate segments
+    };
 
-    return { ...collection, subCollections } as FullCollectionMetadata;
+    // Add the generated metadata to the collections array
+    this.collections.push(collectionMetadata);
+
+    return collectionMetadata;
   };
 
   public setCollection = (col: EnforcedCollectionMetadata) => {
     const colIsSubCollection = this.isSubCollectionMetadata(col);
 
+    // Check if the collection is already registered in the metadata
     const existing = this.collections.find(registeredCollection =>
       this.isSameCollection(registeredCollection, col)
     );
@@ -172,80 +166,33 @@ export class MetadataStorage {
       if (colIsSubCollection) {
         throw new DuplicateSubCollectionError(
           existing.entityConstructor.name,
-          existing.name,
+          existing.path,
           existing.parentProps?.parentPropertyKey
         );
       } else {
-        throw new DuplicateCollectionError(existing.entityConstructor.name, existing.name);
+        throw new DuplicateCollectionError(existing.entityConstructor.name, existing.path);
       }
     }
 
-    const colToAdd: CollectionMetadataWithSegments = {
-      ...col,
-      segments: [col.name],
-    };
-
-    this.collections.push(colToAdd);
-
-    const findSubCollectionsOf = (collectionConstructor: Constructor<IEntity>, name: string) => {
-      return this.collections.filter(registeredCollection => {
-        return (
-          this.isSubCollectionMetadata(registeredCollection) &&
-          registeredCollection.parentProps?.parentEntityConstructor === collectionConstructor &&
-          registeredCollection.parentProps?.parentCollectionName === name
-        );
-      });
-    };
-
-    const colsToUpdate = findSubCollectionsOf(col.entityConstructor, col.name);
-
-    // Update segments for subcollections and subcollections of subcollections
-    while (colsToUpdate.length) {
-      const registeredSubCollection = colsToUpdate.pop();
-
-      if (!registeredSubCollection) {
-        return;
-      }
-
-      const parentOfThisSubCollection = this.collections.find(
-        p =>
-          p.entityConstructor === registeredSubCollection.parentProps?.parentEntityConstructor &&
-          p.name === registeredSubCollection.parentProps?.parentCollectionName
-      );
-      registeredSubCollection.segments =
-        parentOfThisSubCollection?.segments.concat(registeredSubCollection.name) || [];
-      findSubCollectionsOf(
-        registeredSubCollection.entityConstructor,
-        registeredSubCollection.name
-      ).forEach(col => colsToUpdate.push(col));
-    }
+    // Use the utility function to generate and register the metadata
+    this.registerCollectionMetadata(col);
   };
 
-  public getRepository = (entityConstructor: IEntityConstructor, collectionName?: string) => {
-    const repo_index = [entityConstructor.name, collectionName || null];
-    validateRepositoryIndex(repo_index);
-    return this.repositories.get(JSON.stringify(repo_index)) || null;
-  };
+  public getRepository(entityConstructor: IEntityConstructor) {
+    return this.repositories.get(entityConstructor.name) || null;
+  }
 
-  public setRepository = (repo: RepositoryMetadata) => {
+  public setRepository(repo: RepositoryMetadata) {
     if (!(repo.target.prototype instanceof BaseRepository)) {
       throw new CustomRepositoryInheritanceError();
     }
 
-    const repo_index = [repo.entity.name, repo.collectionName ? repo.collectionName : null];
-    validateRepositoryIndex(repo_index);
-
-    if (this.repositories.has(JSON.stringify(repo_index))) {
-      // already exists with no changes
+    if (this.repositories.has(repo.entity.name)) {
       return;
     }
 
-    this.repositories.set(JSON.stringify(repo_index), repo);
-  };
-
-  public getRepositories = () => {
-    return this.repositories;
-  };
+    this.repositories.set(repo.entity.name, repo);
+  }
 
   public firestoreRef: Firestore;
 }
