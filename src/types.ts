@@ -221,5 +221,6 @@ export type FirestoreSerializable = {
 export type ParentProperties<T extends IEntity = IEntity> = {
   parentEntityConstructor: IEntityConstructor<T>;
   parentPropertyKey: string;
-  parentCollectionName: string;
+  parentId: string | 'PENDING_RESOLUTION';
+  parentPathSlug: string;
 };
