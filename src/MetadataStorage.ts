@@ -8,6 +8,7 @@ import type {
   ValidatorOptions,
   ParentProperties,
 } from './types';
+import { plural, singular } from 'pluralize';
 import { arraysAreEqual } from './utils';
 import {
   CollectionPathNotFoundError,
@@ -15,10 +16,8 @@ import {
   DuplicateCollectionError,
   DuplicateSubCollectionError,
   IncompleteOrInvalidPathError,
-  InvalidRepositoryIndexError,
 } from './Errors';
 
-// Unified collection metadata combines the metadata for both collections and subcollections
 export interface BaseCollectionMetadata<T extends IEntity = IEntity> {
   path: string;
   entityConstructor: IEntityConstructor<T>;
@@ -30,11 +29,14 @@ interface EnforcedParentProperties<T extends IEntity = IEntity> {
 
 export interface EnforcedCollectionMetadata<T extends IEntity = IEntity>
   extends BaseCollectionMetadata<T>,
-    EnforcedParentProperties<T> {}
+    EnforcedParentProperties<T> {
+  pathSlug: string;
+    }
 
 export interface CollectionMetadataWithSegments<T extends IEntity = IEntity>
   extends EnforcedCollectionMetadata<T> {
   segments: string[];
+  pathSlug: string;
 }
 
 export interface RepositoryMetadata {
@@ -81,83 +83,37 @@ export class MetadataStorage {
     );
   }
 
-  public async getCollection(
-    pathOrConstructor: string | IEntityConstructor
-  ): Promise<CollectionMetadataWithSegments | null> {
-    let collection: CollectionMetadataWithSegments | undefined;
-
-    if (typeof pathOrConstructor === 'string') {
-      const segments = pathOrConstructor.split('/');
-
-      if (segments.length % 2 === 0) {
-        throw new IncompleteOrInvalidPathError(pathOrConstructor);
-      }
-
-      // Extract the relevant segments
-      const parentCollectionName = segments[segments.length - 3]; // e.g., "recipes"
-      const parentId = segments[segments.length - 2]; // e.g., "omelette"
-      const subcollectionName = segments[segments.length - 1]; // e.g., "ingredients"
-
-      // Determine if a matching collection is already registered
-      collection = this.collections.find(
-        c =>
-          c.entityConstructor.name === subcollectionName &&
-          c.parentProps?.parentEntityConstructor.name === parentCollectionName &&
-          c.parentProps?.parentId === parentId
-      );
-
-      if (!collection) {
-        // Attempt to dynamically load and register the collection
-        const parentPropertyKey = await determineParentPropertyKey(parentCollectionName, parentId, subcollectionName);
-
-        const topLevelCollection = this.firestoreRef.collection(subcollectionName);
-
-        const snapshot = await topLevelCollection
-          .where('parentCollection', '==', parentCollectionName)
-          .where('parentId', '==', parentId)
-          .where('parentPropertyKey', '==', parentPropertyKey)
-          .get();
-
-        if (!snapshot.empty) {
-          return this.registerCollectionMetadata({
-            path: pathOrConstructor,
-            entityConstructor: determineEntityConstructor(subcollectionName),
-            parentProps: {
-              parentEntityConstructor: determineEntityConstructor(parentCollectionName),
-              parentPropertyKey: parentPropertyKey,
-              parentId: parentId,
-            }
-          });
-        }
-      }
-    } else {
-      // Entity constructor-based lookup
-      collection = this.collections.find(
-        c => c.entityConstructor === pathOrConstructor
-      );
+  private generateTemplatePath(
+    col: EnforcedCollectionMetadata
+  ): string {
+    if (!col.parentProps) {
+      // Use the passed pathSlug instead of the constructor name
+      return `/${col.pathSlug}`;
     }
 
-    return collection || null;
+    return `/${col.parentProps.parentPathSlug}/:${singular(col.parentProps.parentEntityConstructor.name)}Id/${col.pathSlug}`;
   }
 
-  private registerCollectionMetadata = (
-    col: EnforcedCollectionMetadata
-  ): CollectionMetadataWithSegments => {
+  private registerCollectionMetadata(
+    col: EnforcedCollectionMetadata | CollectionMetadataWithSegments
+  ): CollectionMetadataWithSegments {
+    const templatePath = this.generateTemplatePath(col);
+
     const collectionMetadata: CollectionMetadataWithSegments = {
       ...col,
-      segments: col.path.split('/'), // Split the path to generate segments
+      path: templatePath,
+      segments: templatePath.split('/').filter( nonEmptyValue => nonEmptyValue), // Keep segments for potential use elsewhere
+      pathSlug: col.pathSlug,
     };
 
-    // Add the generated metadata to the collections array
     this.collections.push(collectionMetadata);
 
     return collectionMetadata;
-  };
+  }
 
-  public setCollection = (col: EnforcedCollectionMetadata) => {
+  public setCollection(col: EnforcedCollectionMetadata) {
     const colIsSubCollection = this.isSubCollectionMetadata(col);
 
-    // Check if the collection is already registered in the metadata
     const existing = this.collections.find(registeredCollection =>
       this.isSameCollection(registeredCollection, col)
     );
@@ -174,9 +130,69 @@ export class MetadataStorage {
       }
     }
 
-    // Use the utility function to generate and register the metadata
     this.registerCollectionMetadata(col);
-  };
+  }
+
+  public async getCollection(
+    pathOrConstructor: string | IEntityConstructor
+  ): Promise<CollectionMetadataWithSegments | null> {
+    let collection: CollectionMetadataWithSegments | undefined;
+
+    if (typeof pathOrConstructor === 'string') {
+      for (const registeredCollection of this.collections) {
+        const params = this.matchTemplatePath(registeredCollection.path, pathOrConstructor);
+        if (params) {
+          // Resolve placeholders in the template without altering the original registered collection
+          const resolvedPath = registeredCollection.path.replace(/:\w+Id/g, (match) => {
+            const paramName = match.substring(1);
+            return params[paramName];
+          });
+
+          // Create a copy of the collection metadata and update it for this retrieval
+          const collectionCopy = { ...registeredCollection, path: resolvedPath };
+
+          // Replace placeholders in the parentProps (like parentId) in the copy
+          if (collectionCopy.parentProps) {
+            collectionCopy.parentProps = { ...collectionCopy.parentProps, parentId: params[singular(collectionCopy.parentProps.parentEntityConstructor.name)] };
+          }
+
+          return collectionCopy;
+        }
+      }
+    } else {
+      // Handle entity constructor-based lookup
+      collection = this.collections.find(
+        c => c.entityConstructor === pathOrConstructor
+      );
+    }
+
+    return collection || null;
+  }
+
+  private matchTemplatePath(
+    template: string,
+    actualPath: string
+  ): { [key: string]: string } | null {
+    const templateSegments = template.split('/');
+    const actualSegments = actualPath.split('/');
+
+    if (templateSegments.length !== actualSegments.length) {
+      return null; // Length mismatch, so no match
+    }
+
+    const params: { [key: string]: string } = {};
+
+    for (let i = 0; i < templateSegments.length; i++) {
+      if (templateSegments[i].startsWith(':')) {
+        const paramName = templateSegments[i].substring(1); // Extract placeholder name (e.g., "recipeId")
+        params[paramName] = actualSegments[i]; // Map actual value (e.g., "classic-french-omelette")
+      } else if (templateSegments[i] !== actualSegments[i]) {
+        return null; // No match if a static segment differs
+      }
+    }
+
+    return params; // Return the resolved params if it matches
+  }
 
   public getRepository(entityConstructor: IEntityConstructor) {
     return this.repositories.get(entityConstructor.name) || null;

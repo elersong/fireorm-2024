@@ -10,7 +10,7 @@ import { IEntityConstructor } from '../types';
  */
 export function SubCollection(entityConstructor: IEntityConstructor) {
   return function (target: any, propertyKey: string | symbol) {
-    entityConstructor.prototype.collectionName = propertyKey;
+    entityConstructor.prototype.pathSlug = propertyKey.toString();
 
     if (isConstructor(target.constructor)) {
       const constructor = target.constructor as IEntityConstructor;

@@ -6,50 +6,50 @@ import type { IEntityConstructor } from '../types';
  * Decorator to mark a class as a Firestore collection.
  * This decorator registers metadata about the collection and processes any pending subcollections.
  *
- * @param {string} [collectionName] - Optional custom name for the collection. If not provided, the plural form of the entity constructor's name will be used.
+ * @param {string} [collectionPathSlug] - Optional custom path slug for the collection. If not provided, the plural form of the entity constructor's name will be used.
  * @returns {Function} - A decorator function that registers the collection metadata and processes subcollections.
  */
-export function Collection(collectionName?: string) {
+export function Collection(collectionPathSlug?: string) {
   return function (entityConstructor: IEntityConstructor, _?: any) {
-    entityConstructor.prototype.collectionName = collectionName || plural(entityConstructor.name);
+    entityConstructor.prototype.pathSlug = collectionPathSlug || plural(entityConstructor.name);
 
-    // process subcols recursively, to ensure that all levels of subcols get registered
+    // Recursively process any subcollections to ensure all levels get registered
     const processSubcollections = (constructor: IEntityConstructor) => {
-      // check to see if any subcollections are set to pending for this entityConstructor
-      // process them if so. Do nothing if not.
       if (constructor.prototype._pendingSubCollections) {
         for (const subCollection of constructor.prototype._pendingSubCollections) {
           getMetadataStorage().setCollection({
             entityConstructor: subCollection.entityConstructor,
-            name: subCollection.propertyKey,
+            path: 'PENDING_RESOLUTION', 
             parentProps: {
               parentEntityConstructor: constructor,
               parentPropertyKey: subCollection.propertyKey,
-              parentCollectionName: constructor.prototype.collectionName,
+              parentId: 'PENDING_RESOLUTION', 
+              parentPathSlug: entityConstructor.prototype.pathSlug, 
             },
+            pathSlug: subCollection.propertyKey, // Pass the subcollection's property key as the pathSlug
           });
 
-          // Check and process next level down (if it exists)
+          // Recursively process deeper subcollection levels
           processSubcollections(subCollection.entityConstructor);
         }
 
-        // Clear the pending subcollections after processing
+        // Clear out the pending subcollections after processing
         delete constructor.prototype._pendingSubCollections;
       }
     };
 
-    // Begin with the first subcollection level
+    // Start processing any subcollections linked to this entity
     processSubcollections(entityConstructor);
 
-    // Register the main collection
+    // Register the main collection with MetadataStorage
     getMetadataStorage().setCollection({
-      name: entityConstructor.prototype.collectionName,
       entityConstructor,
+      path: 'PENDING_RESOLUTION',
       parentProps: null,
+      pathSlug: entityConstructor.prototype.pathSlug,
     });
 
-    // Clear out the collectionName property from the prototype, so others collections
-    // with the same entityConstructor don't get the same collectionName
-    delete entityConstructor.prototype.collectionName;
+    // Clear out the pathSlug property from the prototype
+    delete entityConstructor.prototype.pathSlug;
   };
 }
